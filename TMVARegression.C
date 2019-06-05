@@ -43,13 +43,13 @@ invoked through a GUI that will appear at the end of the run of this macro.
 
 #include "TMVA/Tools.h"
 #include "TMVA/Factory.h"
-//#include "TMVA/DataLoader.h"
-//#include "TMVA/TMVARegGui.h"
+#include "TMVA/DataLoader.h"
+#include "TMVA/TMVARegGui.h"
 
 
 using namespace TMVA;
 
-void TMVARegression_new( TString myMethodList = "" )
+void TMVARegression( TString myMethodList = "" )
 {
    /*
    The explicit loading of the shared libTMVA is done in TMVAlogon.C, defined in .rootrc
@@ -434,6 +434,6 @@ int main( int argc, char** argv )
       if (!methodList.IsNull()) methodList += TString(",");
       methodList += regMethod;
    }
-   TMVARegression_new(methodList);
+   TMVARegression(methodList);
    return 0;
 }
