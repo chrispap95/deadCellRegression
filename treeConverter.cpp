@@ -1,7 +1,7 @@
 {
     TFile* f = TFile::Open("data/training_sample_full_8samples.root");
     TTree* t = dynamic_cast< TTree* >(f->Get("t1"));
-    Float_t n1, n2, n3, n4, n5, n6, nup, ndown, dead, layer;
+    Float_t n1, n2, n3, n4, n5, n6, nup, ndown, dead, layer, pnCells;
     Float_t un1, un2, un3, un4, un5, un6;
     Float_t dn1, dn2, dn3, dn4, dn5, dn6;
     t->SetBranchAddress( "MLlayer", &layer );
@@ -34,19 +34,18 @@
     t1->Branch("previousLayer",&previousLayer,"previousLayer/F");
     t1->Branch("nextLayer",&nextLayer,"nextLayer/F");
     t1->Branch("sameLayer",&sameLayer,"sameLayer/F");
+    t1->Branch("pnCells",&pnCells,"pnCells/F");
     t1->Branch("layer",&layer,"layer/F");
     t1->Branch("dead",&dead,"dead/F");
 
-    int n = 0;
     for (int i = 0; i < t->GetEntries(); ++i) {
         t->GetEntry(i);
         previousLayer = dn1+dn2+dn3+dn4+dn5+dn6+ndown;
         nextLayer = un1+un2+un3+un4+un5+un6+nup;
         sameLayer = n1+n2+n3+n4+n5+n6;
+        pnCells = nup+ndown;
         t1->Fill();
-        n++;
     }
-    cout << n << endl;
     fout->cd();
     fout->Write();
     fout->Close();
