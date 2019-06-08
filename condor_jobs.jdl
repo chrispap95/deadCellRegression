@@ -1,0 +1,11 @@
+universe = vanilla
+Executable = condor-executable.sh
+should_transfer_files = YES
+when_to_transfer_output = ON_EXIT
+Requirements = TARGET.FileSystemDomain == "privnet"
+Output = output/TMVARegression_layerSum$(cluster)_$(process).stdout
+Error = output/TMVARegression_layerSum$(cluster)_$(process).stderr
+Log = output/TMVARegression_layerSum$(cluster)_$(process).condor
+
+Arguments = TMVARegression_layerSum $(process) /home/chpapage/CMSSW_10_2_9/src/deadCellRegression
+Queue
