@@ -65,7 +65,7 @@ void TMVARegression( TString myMethodList = "" )
    // This loads the library
    TMVA::Tools::Instance();
 
-   TString uniqueid = "TMVAReg_6Layers_340K";
+   TString uniqueid = "TMVAReg_flat";
 
    // Default MVA methods to be trained + tested
    std::map<std::string,int> Use;
@@ -204,7 +204,7 @@ void TMVARegression( TString myMethodList = "" )
 
    //load the signal and background event samples from ROOT trees
    TFile *input(0);
-   TString fname = "data/training_sample_full_8samples.root";
+   TString fname = "data/flatTraining_converted.root";
    if (!gSystem->AccessPathName( fname )) {
       input = TFile::Open( fname ); // check if file in local directory exists
    }
@@ -236,9 +236,7 @@ void TMVARegression( TString myMethodList = "" )
    //dataloader->SetWeightExpression( "var1", "Regression" );
 
    // Apply additional cuts on the signal and background samples (can be different)
-   TCut mycut = "abs(MLn1+MLn2+MLn3+MLn4+MLn5+MLn6+MLdead-(MLun1+MLun2+MLun3+MLun4+MLun5+MLun6+MLnup)) < 15"
-        "|| abs(MLn1+MLn2+MLn3+MLn4+MLn5+MLn6+MLdead-(MLdn1+MLdn2+MLdn3+MLdn4+MLdn5+MLdn6+MLndown)) < 15"
-        "|| abs(MLdn1+MLdn2+MLdn3+MLdn4+MLdn5+MLdn6+MLndown-(MLun1+MLun2+MLun3+MLun4+MLun5+MLun6+MLnup)) < 15";
+   TCut mycut = "";
    // for example: TCut mycut = "abs(var1)<0.5 && abs(var2-0.5)<1";
 
    // tell the DataLoader to use all remaining events in the trees after training for testing:

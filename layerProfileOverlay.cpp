@@ -1,48 +1,54 @@
 {
     TCanvas* c = new TCanvas("c","c",1);
+    gStyle->SetOptStat(0);
 
-    TFile* f1 = TFile::Open("layer_profile5.root");
-    TFile* f2 = TFile::Open("layer_profile10.root");
-    TFile* f3 = TFile::Open("layer_profile20.root");
-    TFile* f4 = TFile::Open("layer_profile30.root");
-    TFile* f5 = TFile::Open("layer_profile40.root");
-    TFile* f6 = TFile::Open("layer_profile60.root");
-    TFile* f7 = TFile::Open("layer_profile100.root");
-    TFile* f8 = TFile::Open("layer_profile150.root");
-    TFile* f9 = TFile::Open("layer_profile200.root");
+    TFile* f1 = TFile::Open("data/layerShape_10.root");
+    TFile* f2 = TFile::Open("data/layerShape_40.root");
+    TFile* f3 = TFile::Open("data/layerShape_100.root");
+    TFile* f4 = TFile::Open("data/layerShape_150.root");
+    TFile* f5 = TFile::Open("data/layerShape_200.root");
 
-    TProfile* pf1 = (TProfile*)f1->Get("h_layer_pfx");
-    TProfile* pf2 = (TProfile*)f2->Get("h_layer_pfx");
-    TProfile* pf3 = (TProfile*)f3->Get("h_layer_pfx");
-    TProfile* pf4 = (TProfile*)f4->Get("h_layer_pfx");
-    TProfile* pf5 = (TProfile*)f5->Get("h_layer_pfx");
-    TProfile* pf6 = (TProfile*)f6->Get("h_layer_pfx");
-    TProfile* pf7 = (TProfile*)f7->Get("h_layer_pfx");
-    TProfile* pf8 = (TProfile*)f8->Get("h_layer_pfx");
-    TProfile* pf9 = (TProfile*)f9->Get("h_layer_pfx");
+    TH2F* hf1 = (TH2F*)f1->Get("h_layerSum_nodead");
+    TH2F* hf2 = (TH2F*)f2->Get("h_layerSum_nodead");
+    TH2F* hf3 = (TH2F*)f3->Get("h_layerSum_nodead");
+    TH2F* hf4 = (TH2F*)f4->Get("h_layerSum_nodead");
+    TH2F* hf5 = (TH2F*)f5->Get("h_layerSum_nodead");
 
-    pf1->Scale(1/5.0);
-    pf2->Scale(1/10.0);
-    pf3->Scale(1/20.0);
-    pf4->Scale(1/30.0);
-    pf5->Scale(1/40.0);
-    pf6->Scale(1/60.0);
-    pf7->Scale(1/100.0);
-    pf8->Scale(1/150.0);
-    pf9->Scale(1/200.0);
+    TH1F* pf1 = (TH1F*)hf1->ProfileX("p10",1,-1,"hs");
+    TH1F* pf2 = (TH1F*)hf2->ProfileX("p40",1,-1,"hs");
+    TH1F* pf3 = (TH1F*)hf3->ProfileX("p100",1,-1,"hs");
+    TH1F* pf4 = (TH1F*)hf4->ProfileX("p150",1,-1,"hs");
+    TH1F* pf5 = (TH1F*)hf5->ProfileX("p200",1,-1,"hs");
 
-    THStack* hs = new THStack();
+    pf1->SetTitle("10 GeV; layer; Energy [GeV]");
+    pf2->SetTitle("40 GeV; layer; Energy [GeV]");
+    pf3->SetTitle("100 GeV; layer; Energy [GeV]");
+    pf4->SetTitle("150 GeV; layer; Energy [GeV]");
+    pf5->SetTitle("200 GeV; layer; Energy [GeV]");
 
-    //hs->Add(pf1);
+    double sceeta=1.7;
+    double sinscetheta = sin(2.*atan(exp(-sceeta)));
+
+    pf1->Sumw2();
+    pf2->Sumw2();
+    pf3->Sumw2();
+    pf4->Sumw2();
+    pf5->Sumw2();
+
+    pf1->Scale(sinscetheta/10.0);
+    pf2->Scale(sinscetheta/40.0);
+    pf3->Scale(sinscetheta/100.0);
+    pf4->Scale(sinscetheta/150.0);
+    pf5->Scale(sinscetheta/200.0);
+
+    THStack* hs = new THStack("hs","stack of profiles");
+
+    hs->Add(pf1);
     hs->Add(pf2);
-    //hs->Add(pf3);
-    //hs->Add(pf4);
+    hs->Add(pf3);
+    hs->Add(pf4);
     hs->Add(pf5);
-    //hs->Add(pf6);
-    hs->Add(pf7);
-    hs->Add(pf8);
-    hs->Add(pf9);
+    hs->SetTitle("Average Energy vs Layer (Normalized); layer; Energy fraction");
     hs->Draw("nostack PLC");
-
     c->BuildLegend();
 }

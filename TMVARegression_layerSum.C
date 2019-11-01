@@ -65,40 +65,16 @@ void TMVARegression_layerSum( TString myMethodList = "" )
    // This loads the library
    TMVA::Tools::Instance();
 
-   TString uniqueid = "TMVAReg_6Layers_340K_layerSum";
+   TString uniqueid = "TMVAReg_flat";
 
    // Default MVA methods to be trained + tested
    std::map<std::string,int> Use;
 
-   // Mutidimensional likelihood and Nearest-Neighbour methods
-   Use["PDERS"]           = 0;
-   Use["PDEFoam"]         = 0;
-   Use["KNN"]             = 0;
-   //
-   // Linear Discriminant Analysis
-   Use["LD"]		        = 0;
-   //
-   // Function Discriminant analysis
-   Use["FDA_GA"]          = 0;
-   Use["FDA_MC"]          = 0;
-   Use["FDA_MT"]          = 0;
-   Use["FDA_GAMT"]        = 0;
-   //
-   // Neural Network
-   Use["MLP"]             = 0;
 #ifdef R__HAS_TMVACPU
    Use["DNN_CPU"] = 1;
 #else
    Use["DNN_CPU"] = 0;
 #endif
-   Use["CNN"] = 0;
-   //
-   // Support Vector Machine
-   Use["SVM"]             = 0;
-   //
-   // Boosted Decision Trees
-   Use["BDT"]             = 0;
-   Use["BDTG"]            = 0;
    // ---------------------------------------------------------------
 
    std::cout << std::endl;
@@ -165,6 +141,33 @@ void TMVARegression_layerSum( TString myMethodList = "" )
    dataloader->AddVariable( "previousLayer", "previousLayer", "units", 'F' );
    dataloader->AddVariable( "nextLayer", "nextLayer", "units", 'F' );
    dataloader->AddVariable( "sameLayer", "sameLayer", "units", 'F' );
+   dataloader->AddVariable( "pnCells", "pnCells", "units", 'F' );
+   dataloader->AddVariable( "sum1", "sum1", "units", 'F' );
+   dataloader->AddVariable( "sum2", "sum2", "units", 'F' );
+   dataloader->AddVariable( "sum3", "sum3", "units", 'F' );
+   dataloader->AddVariable( "sum4", "sum4", "units", 'F' );
+   dataloader->AddVariable( "sum5", "sum5", "units", 'F' );
+   dataloader->AddVariable( "sum6", "sum6", "units", 'F' );
+   dataloader->AddVariable( "n1", "neighbor 1", "units", 'F' );
+   dataloader->AddVariable( "n2", "neighbor 2", "units", 'F' );
+   dataloader->AddVariable( "n3", "neighbor 3", "units", 'F' );
+   dataloader->AddVariable( "n4", "neighbor 4", "units", 'F' );
+   dataloader->AddVariable( "n5", "neighbor 5", "units", 'F' );
+   dataloader->AddVariable( "n6", "neighbor 6", "units", 'F' );
+   dataloader->AddVariable( "nup", "neighbor up", "units", 'F' );
+   dataloader->AddVariable( "ndown", "neighbor down", "units", 'F' );
+   dataloader->AddVariable( "un1", "up 1", "units", 'F' );
+   dataloader->AddVariable( "un2", "up 2", "units", 'F' );
+   dataloader->AddVariable( "un3", "up 3", "units", 'F' );
+   dataloader->AddVariable( "un4", "up 4", "units", 'F' );
+   dataloader->AddVariable( "un5", "up 5", "units", 'F' );
+   dataloader->AddVariable( "un6", "up 6", "units", 'F' );
+   dataloader->AddVariable( "dn1", "down 1", "units", 'F' );
+   dataloader->AddVariable( "dn2", "down 2", "units", 'F' );
+   dataloader->AddVariable( "dn3", "down 3", "units", 'F' );
+   dataloader->AddVariable( "dn4", "down 4", "units", 'F' );
+   dataloader->AddVariable( "dn5", "down 5", "units", 'F' );
+   dataloader->AddVariable( "dn6", "down 6", "units", 'F' );
 
    /*
    You can add so-called "Spectator variables", which are not used in the MVA training,
@@ -187,7 +190,7 @@ void TMVARegression_layerSum( TString myMethodList = "" )
 
    //load the signal and background event samples from ROOT trees
    TFile *input(0);
-   TString fname = "data/converted_training_sample_full_8samples.root";
+   TString fname = "data/flatTraining_converted.root";
    if (!gSystem->AccessPathName( fname )) {
       input = TFile::Open( fname ); // check if file in local directory exists
    }
@@ -224,7 +227,7 @@ void TMVARegression_layerSum( TString myMethodList = "" )
 
    // tell the DataLoader to use all remaining events in the trees after training for testing:
    dataloader->PrepareTrainingAndTestTree(mycut,
-                                         "nTrain_Regression=340000:nTest_Regression=0:SplitMode=Random:NormMode=NumEvents:!V" );
+                                         "nTrain_Regression=70000:nTest_Regression=0:SplitMode=Random:NormMode=NumEvents:!V" );
    //
    //     dataloader->PrepareTrainingAndTestTree( mycut,
    //            "nTrain_Regression=0:nTest_Regression=0:SplitMode=Random:NormMode=NumEvents:!V" );
@@ -244,73 +247,19 @@ void TMVARegression_layerSum( TString myMethodList = "" )
    */
 
 
-   // PDE - RS method
-   if (Use["PDERS"])
-      factory->BookMethod( dataloader,  TMVA::Types::kPDERS, "PDERS",
-                           "!H:!V:NormTree=T:VolumeRangeMode=Adaptive:KernelEstimator=Gauss:GaussSigma=0.3:NEventsMin=40:NEventsMax=60:VarTransform=None" );
-   // And the options strings for the MinMax and RMS methods, respectively:
-   //
-   //      "!H:!V:VolumeRangeMode=MinMax:DeltaFrac=0.2:KernelEstimator=Gauss:GaussSigma=0.3" );
-   //      "!H:!V:VolumeRangeMode=RMS:DeltaFrac=3:KernelEstimator=Gauss:GaussSigma=0.3" );
-
-   if (Use["PDEFoam"])
-       factory->BookMethod( dataloader,  TMVA::Types::kPDEFoam, "PDEFoam",
-			    "!H:!V:MultiTargetRegression=F:TargetSelection=Mpv:TailCut=0.001:VolFrac=0.0666:nActiveCells=500:nSampl=2000:nBin=5:Compress=T:Kernel=None:Nmin=10:VarTransform=None" );
-
-   // K-Nearest Neighbour classifier (KNN)
-   if (Use["KNN"])
-      factory->BookMethod( dataloader,  TMVA::Types::kKNN, "KNN",
-                           "nkNN=20:ScaleFrac=0.8:SigmaFact=1.0:Kernel=Gaus:UseKernel=F:UseWeight=T:!Trim" );
-
-   // Linear discriminant
-   if (Use["LD"])
-      factory->BookMethod( dataloader,  TMVA::Types::kLD, "LD",
-                           "!H:!V:VarTransform=None" );
-
-	// Function discrimination analysis (FDA) -- test of various fitters - the recommended one is Minuit (or GA or SA)
-   if (Use["FDA_MC"])
-      factory->BookMethod( dataloader,  TMVA::Types::kFDA, "FDA_MC",
-                          "!H:!V:Formula=(0)+(1)*x0+(2)*x1:ParRanges=(-100,100);(-100,100);(-100,100):FitMethod=MC:SampleSize=100000:Sigma=0.1:VarTransform=D" );
-
-   if (Use["FDA_GA"]) // can also use Simulated Annealing (SA) algorithm (see Cuts_SA options) .. the formula of this example is good for parabolas
-      factory->BookMethod( dataloader,  TMVA::Types::kFDA, "FDA_GA",
-                           "!H:!V:Formula=(0)+(1)*x0+(2)*x1:ParRanges=(-100,100);(-100,100);(-100,100):FitMethod=GA:PopSize=100:Cycles=3:Steps=30:Trim=True:SaveBestGen=1:VarTransform=Norm" );
-
-   if (Use["FDA_MT"])
-      factory->BookMethod( dataloader,  TMVA::Types::kFDA, "FDA_MT",
-                           "!H:!V:Formula=(0)+(1)*x0+(2)*x1:ParRanges=(-100,100);(-100,100);(-100,100);(-10,10):FitMethod=MINUIT:ErrorLevel=1:PrintLevel=-1:FitStrategy=2:UseImprove:UseMinos:SetBatch" );
-
-   if (Use["FDA_GAMT"])
-      factory->BookMethod( dataloader,  TMVA::Types::kFDA, "FDA_GAMT",
-                           "!H:!V:Formula=(0)+(1)*x0+(2)*x1:ParRanges=(-100,100);(-100,100);(-100,100):FitMethod=GA:Converger=MINUIT:ErrorLevel=1:PrintLevel=-1:FitStrategy=0:!UseImprove:!UseMinos:SetBatch:Cycles=1:PopSize=5:Steps=5:Trim" );
-
-   // Neural network (MLP)
-   if (Use["MLP"])
-      factory->BookMethod( dataloader,  TMVA::Types::kMLP, "MLP", "!H:!V:VarTransform=Norm:NeuronType=tanh:NCycles=20000:HiddenLayers=N+20:TestRate=6:TrainingMethod=BFGS:Sampling=0.3:SamplingEpoch=0.8:ConvergenceImprove=1e-6:ConvergenceTests=15:!UseRegulator" );
-
    if (Use["DNN_CPU"]) {
-      /*
-          TString layoutString ("Layout=TANH|(N+100)*2,LINEAR");
-          TString layoutString ("Layout=SOFTSIGN|100,SOFTSIGN|50,SOFTSIGN|20,LINEAR");
-          TString layoutString ("Layout=RELU|300,RELU|100,RELU|30,RELU|10,LINEAR");
-          TString layoutString ("Layout=SOFTSIGN|50,SOFTSIGN|30,SOFTSIGN|20,SOFTSIGN|10,LINEAR");
-          TString layoutString ("Layout=TANH|50,TANH|30,TANH|20,TANH|10,LINEAR");
-          TString layoutString ("Layout=SOFTSIGN|50,SOFTSIGN|20,LINEAR");
-          TString layoutString ("Layout=TANH|100,TANH|30,LINEAR");
-       */
-      TString layoutString("Layout=SYMMRELU|15,Layout=SYMMRELU|50,Layout=SYMMRELU|50,"
-                           "Layout=SYMMRELU|40,Layout=SYMMRELU|40,Layout=SYMMRELU|40,"
+      TString layoutString("Layout=SYMMRELU|32,Layout=SYMMRELU|50,Layout=SYMMRELU|40,Layout=SYMMRELU|30,"
                            "LINEAR");
 
-      TString training0("LearningRate=1e-2,Momentum=0.5,Repetitions=1,ConvergenceSteps=20,BatchSize=50,"
+      TString training0("LearningRate=1e-4,Momentum=0.5,Repetitions=1,ConvergenceSteps=20,BatchSize=200,"
                         "TestRepetitions=10,WeightDecay=0.01,Regularization=NONE,DropConfig=0.2+0.2+0.2+0.,"
                         "DropRepetitions=2");
-      TString training1("LearningRate=1e-3,Momentum=0.7,Repetitions=1,ConvergenceSteps=20,BatchSize=50,"
+      TString training1("LearningRate=1e-4,Momentum=0.7,Repetitions=1,ConvergenceSteps=20,BatchSize=200,"
                         "TestRepetitions=5,WeightDecay=0.01,Regularization=L2,DropConfig=0.1+0.1+0.1,DropRepetitions="
                         "1");
-      TString training2("LearningRate=1e-4,Momentum=0.3,Repetitions=1,ConvergenceSteps=20,BatchSize=50,"
+      TString training2("LearningRate=1e-5,Momentum=0.3,Repetitions=1,ConvergenceSteps=20,BatchSize=200,"
                         "TestRepetitions=5,WeightDecay=0.01,Regularization=NONE");
-      TString training3("LearningRate=1e-4,Momentum=0.2,Repetitions=1,ConvergenceSteps=20,BatchSize=50,"
+      TString training3("LearningRate=1e-6,Momentum=0.1,Repetitions=1,ConvergenceSteps=20,BatchSize=200,"
                         "TestRepetitions=5,WeightDecay=0.01,Regularization=NONE");
 
 
@@ -331,52 +280,6 @@ void TMVARegression_layerSum( TString myMethodList = "" )
       factory->BookMethod(dataloader, TMVA::Types::kDNN, "DNN_CPU", nnOptions); // NN
    }
 
-   if (Use["CNN"]) {
-      TString layoutString("Layout=SYMMRELU|120,Layout=SYMMRELU|120,LINEAR");
-
-      TString training0("LearningRate=1e-3,Momentum=0.5,Repetitions=1,ConvergenceSteps=20,BatchSize=50,"
-                        "TestRepetitions=10,WeightDecay=0.01,Regularization=NONE,DropConfig=0.2+0.2+0.2+0.,"
-                        "DropRepetitions=2");
-      TString training1("LearningRate=1e-3,Momentum=0.6,Repetitions=1,ConvergenceSteps=20,BatchSize=50,"
-                        "TestRepetitions=5,WeightDecay=0.01,Regularization=L2,DropConfig=0.1+0.1+0.1,DropRepetitions="
-                        "1");
-      TString training2("LearningRate=1e-4,Momentum=0.3,Repetitions=1,ConvergenceSteps=10,BatchSize=50,"
-                        "TestRepetitions=5,WeightDecay=0.01,Regularization=NONE");
-      TString training3("LearningRate=1e-4,Momentum=0.2,Repetitions=1,ConvergenceSteps=10,BatchSize=50,"
-                        "TestRepetitions=5,WeightDecay=0.01,Regularization=NONE");
-
-
-      TString trainingStrategyString("TrainingStrategy=");
-      trainingStrategyString += training0 + "|" + training1 + "|" + training2 + "|" + training3;
-
-      //       TString trainingStrategyString
-      //       ("TrainingStrategy=LearningRate=1e-1,Momentum=0.3,Repetitions=3,ConvergenceSteps=20,BatchSize=30,TestRepetitions=7,WeightDecay=0.0,L1=false,DropFraction=0.0,DropRepetitions=5");
-
-      TString nnOptions(
-         "!H:V:ErrorStrategy=SUMOFSQUARES:VarTransform=G:WeightInitialization=XAVIERUNIFORM:Architecture=CPU");
-      //       TString nnOptions ("!H:V:VarTransform=Normalize:ErrorStrategy=CHECKGRADIENTS");
-      nnOptions.Append(":");
-      nnOptions.Append(layoutString);
-      nnOptions.Append(":");
-      nnOptions.Append(trainingStrategyString);
-
-      factory->BookMethod(dataloader, TMVA::Types::kDNN, "CNN_CPU", nnOptions); // NN
-   }
-
-
-
-   // Support Vector Machine
-   if (Use["SVM"])
-      factory->BookMethod( dataloader,  TMVA::Types::kSVM, "SVM", "Gamma=0.25:Tol=0.001:VarTransform=Norm" );
-
-   // Boosted Decision Trees
-   if (Use["BDT"])
-     factory->BookMethod( dataloader,  TMVA::Types::kBDT, "BDT",
-                           "!H:!V:NTrees=100:MinNodeSize=1.0%:BoostType=AdaBoostR2:SeparationType=RegressionVariance:nCuts=20:PruneMethod=CostComplexity:PruneStrength=30" );
-
-   if (Use["BDTG"])
-     factory->BookMethod( dataloader,  TMVA::Types::kBDT, "BDTG",
-                           "!H:!V:NTrees=2000::BoostType=Grad:Shrinkage=0.1:UseBaggedBoost:BaggedSampleFraction=0.5:nCuts=20:MaxDepth=3:MaxDepth=4" );
    // --------------------------------------------------------------------------------------------------
 
    // Now you can tell the factory to train, test, and evaluate the MVAs
