@@ -2,3 +2,6 @@
 *.root
 *.eps
 *.pdf
+*.jpg
+*.png
+.DS_Store
