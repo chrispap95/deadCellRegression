@@ -65,7 +65,7 @@ void TMVARegression_layerSum( TString myMethodList = "" )
    // This loads the library
    TMVA::Tools::Instance();
 
-   TString uniqueid = "TMVAReg_flat";
+   TString uniqueid = "TMVAReg_flat_cmssw_8neighbors";
 
    // Default MVA methods to be trained + tested
    std::map<std::string,int> Use;
@@ -138,7 +138,7 @@ void TMVARegression_layerSum( TString myMethodList = "" )
    [all types of expressions that can also be parsed by TTree::Draw( "expression" )]
    */
    dataloader->AddVariable( "layer", "layer", "units", 'F' );
-   dataloader->AddVariable( "previousLayer", "previousLayer", "units", 'F' );
+   /*dataloader->AddVariable( "previousLayer", "previousLayer", "units", 'F' );
    dataloader->AddVariable( "nextLayer", "nextLayer", "units", 'F' );
    dataloader->AddVariable( "sameLayer", "sameLayer", "units", 'F' );
    dataloader->AddVariable( "pnCells", "pnCells", "units", 'F' );
@@ -147,7 +147,7 @@ void TMVARegression_layerSum( TString myMethodList = "" )
    dataloader->AddVariable( "sum3", "sum3", "units", 'F' );
    dataloader->AddVariable( "sum4", "sum4", "units", 'F' );
    dataloader->AddVariable( "sum5", "sum5", "units", 'F' );
-   dataloader->AddVariable( "sum6", "sum6", "units", 'F' );
+   dataloader->AddVariable( "sum6", "sum6", "units", 'F' );*/
    dataloader->AddVariable( "n1", "neighbor 1", "units", 'F' );
    dataloader->AddVariable( "n2", "neighbor 2", "units", 'F' );
    dataloader->AddVariable( "n3", "neighbor 3", "units", 'F' );
@@ -156,7 +156,7 @@ void TMVARegression_layerSum( TString myMethodList = "" )
    dataloader->AddVariable( "n6", "neighbor 6", "units", 'F' );
    dataloader->AddVariable( "nup", "neighbor up", "units", 'F' );
    dataloader->AddVariable( "ndown", "neighbor down", "units", 'F' );
-   dataloader->AddVariable( "un1", "up 1", "units", 'F' );
+/*   dataloader->AddVariable( "un1", "up 1", "units", 'F' );
    dataloader->AddVariable( "un2", "up 2", "units", 'F' );
    dataloader->AddVariable( "un3", "up 3", "units", 'F' );
    dataloader->AddVariable( "un4", "up 4", "units", 'F' );
@@ -167,7 +167,7 @@ void TMVARegression_layerSum( TString myMethodList = "" )
    dataloader->AddVariable( "dn3", "down 3", "units", 'F' );
    dataloader->AddVariable( "dn4", "down 4", "units", 'F' );
    dataloader->AddVariable( "dn5", "down 5", "units", 'F' );
-   dataloader->AddVariable( "dn6", "down 6", "units", 'F' );
+   dataloader->AddVariable( "dn6", "down 6", "units", 'F' );*/
 
    /*
    You can add so-called "Spectator variables", which are not used in the MVA training,
@@ -190,7 +190,7 @@ void TMVARegression_layerSum( TString myMethodList = "" )
 
    //load the signal and background event samples from ROOT trees
    TFile *input(0);
-   TString fname = "data/flatTraining_converted.root";
+   TString fname = "data/cmssw_flat_training_sample_converted.root";
    if (!gSystem->AccessPathName( fname )) {
       input = TFile::Open( fname ); // check if file in local directory exists
    }
@@ -227,7 +227,7 @@ void TMVARegression_layerSum( TString myMethodList = "" )
 
    // tell the DataLoader to use all remaining events in the trees after training for testing:
    dataloader->PrepareTrainingAndTestTree(mycut,
-                                         "nTrain_Regression=70000:nTest_Regression=0:SplitMode=Random:NormMode=NumEvents:!V" );
+                                         "nTrain_Regression=330000:nTest_Regression=0:SplitMode=Random:NormMode=NumEvents:!V" );
    //
    //     dataloader->PrepareTrainingAndTestTree( mycut,
    //            "nTrain_Regression=0:nTest_Regression=0:SplitMode=Random:NormMode=NumEvents:!V" );

@@ -23,7 +23,7 @@ void ScaleRes1(unsigned imode)
     //set up canvas
     int W = 800;
     int H = 600;
-    TString canvName = "resplot_05dead_mlcorr";
+    TString canvName = "resplot";
     TCanvas* canv = new TCanvas(canvName,canvName,50,50,W,H);
     // references for T, B, L, R
     float T = 0.08*H;
@@ -57,7 +57,7 @@ void ScaleRes1(unsigned imode)
 
     //get data
     const unsigned n_f=5;
-    double ets[n_f]={10.,20.,40.,60.,100.};
+    double ets[n_f]={5.,10.,15,20.,30,40.,60.,80,100.};
     double scemean[n_f]={0.,0.,0.,0.,0.};
     double scemeane[n_f]={0.,0.,0.,0.,0.};
     double sceres[n_f]={0.,0.,0.,0.,0.};
@@ -70,21 +70,30 @@ void ScaleRes1(unsigned imode)
 
     std::cout<<"will robinson"<<std::endl;
     for(int i(0);i<n_f;i++) {
-        if(imode==1) {energies[i]=ets[i]/sin(scetheta);}
+        if(imode==0) {energies[i]=ets[i]/sin(scetheta);}
         else {energies[i]=ets[i];}
         std::cout<<" energy is "<<energies[i]<<std::endl;
         std::ostringstream sceName;
-        sceName << "data/flat_regressionResult_" << ets[i] << "GeV_d050.root";
+        sceName << "rootFiles/out_E" << ets[i] << "Eta1p7_df01.root";
         std::cout<<"opening "<<sceName.str().c_str()<<std::endl;
         TFile *f1 = new TFile(sceName.str().c_str());
-        TH1F *AAA = static_cast<TH1F*>(f1->Get("h_dead_mlcorr")->Clone());
+        TTree* t = dynamic_cast< TTree* >(f->Get("t1"));
+        Float_t n1, n2, n3, n4, n5, n6, nup, ndown, dead, rechitsum;
+        t->SetBranchAddress( "MLn1", &n1 );
+        t->SetBranchAddress( "MLn2", &n2 );
+        t->SetBranchAddress( "MLn3", &n3 );
+        t->SetBranchAddress( "MLn4", &n4 );
+        t->SetBranchAddress( "MLn5", &n5 );
+        t->SetBranchAddress( "MLn6", &n6 );
+        t->SetBranchAddress( "MLnup", &nup );
+        t->SetBranchAddress( "MLndown", &ndown );
+        t->SetBranchAddress( "MLdead", &dead);
+        t->SetBranchAddress( "MLrechitsum", &rechitsum);
+
+        TH1F *AAA = new TH1F("AAA","AAA");
         TF1* g = new TF1("g","gaus");
         TFitResultPtr r;
-        if (i == 2) {
-            r = AAA->Fit("g","S","",50,600);
-        }else if (i == 4){
-            r = AAA->Fit("g","S","",50,600);
-        }
+        r = AAA->Fit("g","S");
         if (i == 0) r = AAA->Fit("g","S","",g->GetParameter(1)-3*g->GetParameter(2),g->GetParameter(1)+3*g->GetParameter(2));
         if (i == 1) r = AAA->Fit("g","S","",g->GetParameter(1)-2*g->GetParameter(2),g->GetParameter(1)+2*g->GetParameter(2));
         if (i == 2) r = AAA->Fit("g","S","",g->GetParameter(1)-2*g->GetParameter(2),g->GetParameter(1)+3*g->GetParameter(2));
@@ -114,7 +123,7 @@ void ScaleRes1(unsigned imode)
     gr->SetMarkerColor(4);
     gr->SetMarkerStyle(21);
     TF1  *f2 = new TF1("f2","sqrt(([0]/sqrt(x))**2+([1]/x)**2+([2])**2)");
-    gr->Fit("f2","q");
+    gr->Fit("f2");
     gr->Draw("AP");
 
     TLatex* t = new TLatex();
@@ -128,8 +137,8 @@ void ScaleRes1(unsigned imode)
 
     canv->Update();
     //canv->Print(canvName+".eps",".eps");
-    TFile* out = new TFile("out05flat_dead_mlcorr.root","RECREATE");
+    /*TFile* out = new TFile("out05flat_dead_mlcorr.root","RECREATE");
     gr->Write();
-    out->Close();
+    out->Close();*/
     return;
 }
