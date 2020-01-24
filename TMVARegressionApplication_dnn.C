@@ -30,7 +30,7 @@
 
 using namespace TMVA;
 
-void TMVARegressionApplication_dnn() {
+void TMVARegressionApplication_dnn(int energy, int deadfrac) {
     //---------------------------------------------------------------
     // This loads the library
     TMVA::Tools::Instance();
@@ -107,8 +107,8 @@ void TMVARegressionApplication_dnn() {
     // in this example, there is a toy tree with signal and one with background events
     // we'll later on use only the "signal" events for the test in this example.
     //
-    string energy_str = "10";
-    string deadfrac_str = "5";
+    string energy_str = to_string(energy);
+    string deadfrac_str = to_string(deadfrac);
     TFile *input(0);
     TString fname = "data/regression_sample_et"+energy_str+"_eta1.7_layerSumMVA_d0"+deadfrac_str+"0.root";
     if (!gSystem->AccessPathName( fname )) {
@@ -162,9 +162,15 @@ void TMVARegressionApplication_dnn() {
     TStopwatch sw;
     sw.Start();
 
-    TH1F* h_dead_nocorr = new TH1F("h_dead_nocorr","1% dead",700,0,700);
-    TH1F* h_dead_mlcorr = new TH1F("h_dead_mlcorr","1% dead + ML correction",700,0,700);
-    TH1F* h_dead_avcorr = new TH1F("h_dead_avcorr","1% dead + average correction",700,0,700);
+    TString s_dead_nocorr = deadfrac_str+"% dead";
+    TString s_dead_mlcorr = deadfrac_str+"% dead + ML correction";
+    TString s_dead_avcorr = deadfrac_str+"% dead + average correction";
+    TString s_dead_lsavcorr = deadfrac_str+"% dead + LS average correction";
+
+    TH1F* h_dead_nocorr = new TH1F("h_dead_nocorr",s_dead_nocorr,700,0,700);
+    TH1F* h_dead_mlcorr = new TH1F("h_dead_mlcorr",s_dead_mlcorr,700,0,700);
+    TH1F* h_dead_avcorr = new TH1F("h_dead_avcorr",s_dead_avcorr,700,0,700);
+    TH1F* h_dead_lsavcorr = new TH1F("h_dead_lsavcorr",s_dead_lsavcorr,700,0,700);
     TH1F* h_nodead = new TH1F("h_nodead","0% dead",700,0,700);
     TH2F* hscatter2 = new TH2F("hscatter2", "ML bias;Rechit_{true} [GeV]; Rechit_{true}-Rechit_{ML} [GeV]", 100, 0, 40, 100, -15, 15);
     TH2F* hscatter3 = new TH2F("hscatter3", "Averege bias;Rechit_{true} [GeV]; Rechit_{true}-Rechit_{ML} [GeV]", 100, 0, 40, 100, -15, 15);
@@ -179,6 +185,7 @@ void TMVARegressionApplication_dnn() {
     Float_t tempRechitsum0 = 0;
     Float_t tempRechitsum1 = 0;
     Float_t tempRechitsum2 = 0;
+    Float_t tempRechitsum3 = 0;
     for (Long64_t ievt=0; ievt<theTree->GetEntries();ievt++) {
         if (ievt%50000 == 0) {
             std::cout << "--- ... Processing event: " << ievt << std::endl;
@@ -191,6 +198,7 @@ void TMVARegressionApplication_dnn() {
             tempRechitsum0 = rechitsum;
             tempRechitsum1 = rechitsum;
             tempRechitsum2 = rechitsum;
+            tempRechitsum3 = rechitsum;
         }
 
         // Retrieve the MVA target values (regression outputs) and fill into histograms
@@ -231,6 +239,7 @@ void TMVARegressionApplication_dnn() {
             TString title = hists[ih]->GetTitle();
             Float_t val = (reader->EvaluateRegression( title ))[0];//*rechitsum;
             Float_t avrechit = (nup/2+ndown/2);//*rechitsum;
+            Float_t lsavrechit = previousLayer/2+nextLayer/2-sameLayer;
             hists[ih]->Fill(val);
             avdevquad += pow(dead-val,2);//*rechitsum,2);
             n++;
@@ -243,15 +252,18 @@ void TMVARegressionApplication_dnn() {
                 tempRechitsum+=val;
                 tempRechitsum1+=dead;
                 tempRechitsum2+=avrechit;
+                tempRechitsum3+=lsavrechit;
             }else{
                 h_dead_nocorr->Fill(tempRechitsum0);
                 h_dead_mlcorr->Fill(tempRechitsum);
                 h_dead_avcorr->Fill(tempRechitsum2);
+                h_dead_lsavcorr->Fill(tempRechitsum3);
                 h_nodead->Fill(tempRechitsum1);
                 tempRechitsum = rechitsum;
                 tempRechitsum0 = rechitsum;
                 tempRechitsum1 = rechitsum;
                 tempRechitsum2 = rechitsum;
+                tempRechitsum3 = rechitsum;
                 tempEv = event;
             }
         }
@@ -291,6 +303,7 @@ void TMVARegressionApplication_dnn() {
     h_dead_nocorr->Write();
     h_dead_mlcorr->Write();
     h_dead_avcorr->Write();
+    h_dead_lsavcorr->Write();
     h_nodead->Write();
     hvslayer->Write();
     target->Close();
