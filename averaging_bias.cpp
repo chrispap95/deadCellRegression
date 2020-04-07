@@ -4,9 +4,9 @@
     gPad->SetTickx();
     gPad->SetTicky();
     gPad->SetLogz();
-    TFile* f = TFile::Open("data/training_sample_full_8samples.root");
+    TFile* f = TFile::Open("data/cmssw/TrainingSamples/out_E0to3000Eta1p7_df01.root");
     TTree* t = dynamic_cast< TTree* >(f->Get("t1"));
-    Float_t n1, n2, n3, n4, n5, n6, nup, ndown, dead;
+    Float_t n1, n2, n3, n4, n5, n6, nup, ndown, dead, rechitsum;
     Float_t un1, un2, un3, un4, un5, un6;
     Float_t dn1, dn2, dn3, dn4, dn5, dn6;
     t->SetBranchAddress( "MLn1", &n1 );
@@ -30,11 +30,12 @@
     t->SetBranchAddress( "MLdn4", &dn4 );
     t->SetBranchAddress( "MLdn5", &dn5 );
     t->SetBranchAddress( "MLdn6", &dn6 );
+    t->SetBranchAddress( "MLrechitsum", &rechitsum );
 
     float xstart = 0;
     TH2F* h_avbias = new TH2F("h_avbias",
-        "Averaging method 2.0 bias;Rechit_{true} [GeV];Rechit_{true}-Rechit_{av}",
-        100,xstart,40,100,-20,20);
+        "Averaging method bias;recHit_{true} [GeV];recHit_{av}-recHit_{true}[GeV]",
+        50,xstart,50,50,-40,30);
     float avdevquad = 0;
     int n = 0;
     TLine* l = new TLine(xstart,0,0.4,0);
@@ -45,19 +46,22 @@
             float layer_down = dn1+dn2+dn3+dn4+dn5+dn6+ndown;
             float layer_up = un1+un2+un3+un4+un5+un6+nup;
             float av_layer = layer_down/2+layer_up/2;
-            float rechit = av_layer-n1-n2-n3-n4-n5-n6;
-            h_avbias->Fill(dead,dead-rechit);
+            //float rechit = av_layer-n1-n2-n3-n4-n5-n6;
+            float rechit = (ndown/2+nup/2);
+            h_avbias->Fill(dead,rechit-dead);
             avdevquad += pow(dead-rechit,2);
             n++;
         }
     }
     avdevquad = sqrt(avdevquad/(float)n);
-    h_avbias->GetXaxis()->SetTitleOffset(1.2);
+    //h_avbias->GetXaxis()->SetTitleOffset(1.1);
+    h_avbias->GetXaxis()->SetTitleSize(0.045);
+    h_avbias->GetYaxis()->SetTitleSize(0.045);
     TLatex ltx;
     h_avbias->Draw("colz");
     l->Draw();
     ltx.SetTextSize(0.035);
     ltx.DrawLatex(xstart+0.003,h_avbias->GetYaxis()->GetXmax()*1.05,
-    "HGCAL#scale[0.8]{#font[12]{Internal}}");
+    "HGCAL#scale[0.8]{#font[12]{Simulation work in progress}}");
     cout << "average quadratic deviation = " << avdevquad << endl;
 }

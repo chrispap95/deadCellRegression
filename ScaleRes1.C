@@ -14,8 +14,8 @@
 
 void ScaleRes1(unsigned imode)
 {
-    if(imode>2) std::cout<<"invalid imode choice "<<imode<<std::endl;
-    if(imode<1) std::cout<<"invalid imode choice "<<imode<<std::endl;
+    //if(imode>2) std::cout<<"invalid imode choice "<<imode<<std::endl;
+    //if(imode<1) std::cout<<"invalid imode choice "<<imode<<std::endl;
 
     gStyle->SetOptStat(0);
     gStyle->SetOptFit(1);
@@ -56,25 +56,27 @@ void ScaleRes1(unsigned imode)
 
 
     //get data
-    const unsigned n_f=5;
-    double ets[n_f]={5.,10.,15,20.,30,40.,60.,80,100.};
-    double scemean[n_f]={0.,0.,0.,0.,0.};
-    double scemeane[n_f]={0.,0.,0.,0.,0.};
-    double sceres[n_f]={0.,0.,0.,0.,0.};
-    double scerese[n_f]={0.,0.,0.,0.,0.};
-    double energies[n_f]={0.,0.,0.,0.,0.};
-    double energiese[n_f]={0.,0.,0.,0.,0.};
+    const unsigned n_f=19;
+    double ets[n_f]={5.,10.,15,20.,30,40.,60.,80,100.,140,200,280,400,550,750,1000,1400,2000,2800};
+    double scemean[n_f]={0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.};
+    double scemeane[n_f]={0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.};
+    double sceres[n_f]={0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.};
+    double scerese[n_f]={0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.};
+    double energies[n_f]={0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.};
+    double energiese[n_f]={0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.};
 
     double sceeta=1.7;
     double scetheta = 2.*atan(exp(-sceeta));
 
     std::cout<<"will robinson"<<std::endl;
     for(int i(0);i<n_f;i++) {
-        if(imode==0) {energies[i]=ets[i]/sin(scetheta);}
+        //if(imode==0) {energies[i]=ets[i]/sin(scetheta);}
+        if(0) {energies[i]=ets[i]/sin(scetheta);}
         else {energies[i]=ets[i];}
         std::cout<<" energy is "<<energies[i]<<std::endl;
         std::ostringstream sceName;
-        sceName << "rootFiles/out_E" << ets[i] << "Eta1p7_df01.root";
+        sceName << "data/cmssw/RegressionResults/flatRegressionResult_"
+        << ets[i] << "GeV_d010.root";
         std::cout<<"opening "<<sceName.str().c_str()<<std::endl;
         TFile *f1 = new TFile(sceName.str().c_str());
         TTree* t = dynamic_cast< TTree* >(f->Get("t1"));
