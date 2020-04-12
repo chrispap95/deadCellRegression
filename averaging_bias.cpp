@@ -34,8 +34,8 @@
 
     float xstart = 0;
     TH2F* h_avbias = new TH2F("h_avbias",
-        "Averaging method bias;recHit_{true} [GeV];recHit_{av}-recHit_{true}[GeV]",
-        50,xstart,50,50,-40,30);
+        ";recHit_{truth}[GeV];recHit_{av}-recHit_{truth}[GeV]",
+        50,xstart,50,50,-70,60);
     float avdevquad = 0;
     int n = 0;
     TLine* l = new TLine(xstart,0,0.4,0);
@@ -46,22 +46,23 @@
             float layer_down = dn1+dn2+dn3+dn4+dn5+dn6+ndown;
             float layer_up = un1+un2+un3+un4+un5+un6+nup;
             float av_layer = layer_down/2+layer_up/2;
-            //float rechit = av_layer-n1-n2-n3-n4-n5-n6;
-            float rechit = (ndown/2+nup/2);
+            float rechit = av_layer-n1-n2-n3-n4-n5-n6;
+            //float rechit = (ndown/2+nup/2);
             h_avbias->Fill(dead,rechit-dead);
             avdevquad += pow(dead-rechit,2);
             n++;
         }
     }
     avdevquad = sqrt(avdevquad/(float)n);
-    //h_avbias->GetXaxis()->SetTitleOffset(1.1);
-    h_avbias->GetXaxis()->SetTitleSize(0.045);
+    h_avbias->GetXaxis()->SetTitleOffset(1.1);
+    h_avbias->GetYaxis()->SetTitleOffset(0.9);
+    h_avbias->GetXaxis()->SetTitleSize(0.04);
     h_avbias->GetYaxis()->SetTitleSize(0.045);
-    TLatex ltx;
     h_avbias->Draw("colz");
+    /*TLatex ltx;
     l->Draw();
     ltx.SetTextSize(0.035);
     ltx.DrawLatex(xstart+0.003,h_avbias->GetYaxis()->GetXmax()*1.05,
     "HGCAL#scale[0.8]{#font[12]{Simulation work in progress}}");
-    cout << "average quadratic deviation = " << avdevquad << endl;
+    cout << "average quadratic deviation = " << avdevquad << endl;*/
 }

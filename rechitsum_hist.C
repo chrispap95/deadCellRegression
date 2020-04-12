@@ -1,4 +1,4 @@
-std::vector<double> rechitsum_new(int En, int df, int bins, int range, double fit_cut){
+TH1F* rechitsum_hist(int En, int df, int bins, int range, int correction){
     TString filename = "";
     if(df) {
         filename = "data/cmssw/RegressionResults/flatRegressionResult_"+to_string(En)+"GeV_d0"+to_string(df)+"0_excludeDead2.root";
@@ -36,8 +36,8 @@ std::vector<double> rechitsum_new(int En, int df, int bins, int range, double fi
     t1->SetBranchAddress("MLdn5",&dn5);
     t1->SetBranchAddress("MLdn6",&dn6);
 
-    TString histname = "single gamma "+to_string(En)+"GeV;recHitSum [GeV];Entries";
-    TH1F* h1 = new TH1F("h1",histname,bins,En-range,En+range);
+    TString histname = ";recHitSum [GeV];Entries";
+    TH1F* h1 = new TH1F("h1",histname,bins,160,230);
     int n = t1->GetEntries();
     Float_t event_tmp;
     Float_t rechitsum_truth  = 0;
@@ -60,7 +60,13 @@ std::vector<double> rechitsum_new(int En, int df, int bins, int range, double fi
             rechitsum_MLregr = rechitsum;
         }
         if(event_tmp != event) {
-            h1->Fill(rechitsum);
+            if(!df) h1->Fill(rechitsum_truth);
+            else {
+                if(correction == 0) h1->Fill(rechitsum);
+                else if(correction == 1) h1->Fill(rechitsum_aver);
+                else if(correction == 2) h1->Fill(rechitsum_LSaver);
+                else if(correction == 3) h1->Fill(rechitsum_MLregr);
+            }
             rechitsum_truth  =  rechitsum;
             rechitsum_truth  += truth;
             rechitsum_aver   =  rechitsum;
@@ -78,26 +84,5 @@ std::vector<double> rechitsum_new(int En, int df, int bins, int range, double fi
         }
     }
 
-    h1->Draw("same");
-    h1->GetXaxis()->SetTitleOffset(1.2);
-    h1->GetXaxis()->SetTitleSize(0.044);
-    h1->GetYaxis()->SetTitleSize(0.044);
-    TFitResultPtr r = h1->Fit("gaus","Sq","");
-    r = h1->Fit("gaus","Sq","",r->Parameter(1)-fit_cut*r->Parameter(2),r->Parameter(1)+3*r->Parameter(2));
-
-    std::vector<double> output_vector;
-    double a0  = r->Parameter(0);
-    double a1  = r->Parameter(1);
-    double a2  = r->Parameter(2);
-    double a0e = r->ParError(0);
-    double a1e = r->ParError(1);
-    double a2e = r->ParError(2);
-    output_vector.push_back(a0);
-    output_vector.push_back(a1);
-    output_vector.push_back(a2);
-    output_vector.push_back(a0e);
-    output_vector.push_back(a1e);
-    output_vector.push_back(a2e);
-
-    return output_vector;
+    return h1;
 }

@@ -4,21 +4,21 @@ void rechitsum_loop(int df){
     gStyle->SetOptStat(0);
     gStyle->SetOptFit();
 
-    TCanvas* c1 = new TCanvas("c1","c1",1000,800);
-    TCanvas* c2 = new TCanvas("c2","c2",1000,800);
+    TCanvas* c1 = new TCanvas("c1","c1",1200,800);
+    /*TCanvas* c2 = new TCanvas("c2","c2",1000,800);
     TCanvas* c3 = new TCanvas("c3","c3",1000,800);
     TCanvas* c4 = new TCanvas("c4","c4",1000,800);
-    TCanvas* c5 = new TCanvas("c5","c5",1000,800);
-    c1->Divide(2,2);
-    c2->Divide(2,2);
+    TCanvas* c5 = new TCanvas("c5","c5",1000,800);*/
+    c1->Divide(3,2);
+    /*c2->Divide(2,2);
     c3->Divide(2,2);
     c4->Divide(2,2);
-    c5->Divide(2,2);
+    c5->Divide(2,2);*/
 
     //Note: for df = 0 change correction in rechitsum_new()
     int deadfrac[] = {0,0,-1,1,-1,2,-1,3};
 
-    double energies[]    =  {  5, 10, 15, 20, 30, 40, 60, 80,100,140,200,280,400,550,750,1000,1400,2000,2800};
+    /*double energies[]  =  {  5, 10, 15, 20, 30, 40, 60, 80,100,140,200,280,400,550,750,1000,1400,2000,2800};
     int bins[]           =  {100,100,100,100,100,100,100,100,100,100,100,100,100,100,100, 100, 100, 100, 100};
     int range[][19]      = {
                             {  3,  5,  5, 10, 10, 10, 15, 15, 15, 20, 25, 30, 40, 50,100, 150, 400, 800,1100},
@@ -37,14 +37,36 @@ void rechitsum_loop(int df){
     double scemeane[]  = {0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.};
     double sceres[]    = {0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.};
     double scerese[]   = {0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.};
-    double energiese[] = {0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.};
+    double energiese[] = {0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.};*/
 
-    for(int j = 0; j < 14; ++j){
-        if(j < 4) c1->cd(j%4+1);
+    double energies[]    =  { 10, 60,100,200,400,550};
+    int bins[]           =  {100,100,100,100,100,100};
+    int range[][19]      = {
+                            {  5, 15, 15, 25, 40, 50},
+                            {  5, 15, 20, 40, 70,120},
+                            {  5, 17, 20, 50, 80,100},
+                            {  5, 17, 30, 60,100,150}
+                           };
+    double fit_cut[][19] = {
+                            {1.6,1.6,1.6,1.2,1.2,1.1},
+                            {1.6,1.6,1.6,1.6,1.6,1.6},
+                            {1.6,1.5,1.5,1.2,1.0,1.0},
+                            {1.6,1.6,1.6,1.6,1.6,1.6}
+                           };
+
+    double scemean[]   = {0.,0.,0.,0.,0.,0.};
+    double scemeane[]  = {0.,0.,0.,0.,0.,0.};
+    double sceres[]    = {0.,0.,0.,0.,0.,0.};
+    double scerese[]   = {0.,0.,0.,0.,0.,0.};
+    double energiese[] = {0.,0.,0.,0.,0.,0.};
+
+    for(int j = 0; j < 6; ++j){
+        c1->cd(j+1);
+        /*if(j < 4) c1->cd(j%4+1);
         else if(j < 8) c2->cd(j%4+1);
         else if(j < 12) c3->cd(j%4+1);
         else if(j < 16) c4->cd(j%4+1);
-        else c5->cd(j%4+1);
+        else c5->cd(j%4+1);*/
         std::vector<double> temp = rechitsum_new(energies[j],df,bins[j],range[deadfrac[df]][j],fit_cut[deadfrac[df]][j]);
         scemean[j]  = temp[1];
         scemeane[j] = temp[4];
@@ -56,7 +78,7 @@ void rechitsum_loop(int df){
         << " res "  << sceres[j]  << "+-" << scerese[j] << std::endl;
     }
 
-    TCanvas* c_res = new TCanvas("c_res","c_res",1);
+    /*TCanvas* c_res = new TCanvas("c_res","c_res",1);
     TGraphErrors *gr = new TGraphErrors(14,energies,sceres,energiese,scerese);
     gr->SetTitle("gamma resolution versus energy;E [GeV];width/mean");
     gr->SetMarkerColor(4);
@@ -64,9 +86,9 @@ void rechitsum_loop(int df){
     TF1  *f2 = new TF1("f2","sqrt(([0]/sqrt(x))**2+([1]/x)**2+([2])**2)");
     f2->SetNpx(1000);
     gr->Fit("f2");
-    gr->Draw("AP");
+    gr->Draw("AP");*/
 
-    TString outname = "outputFiles2/out0"+to_string(df)+"_LSaver.root";
+    /*TString outname = "outputFiles2/out0"+to_string(df)+"_LSaver.root";
     TFile* out = new TFile(outname,"RECREATE");
     gr->Write();
     out->Close();
@@ -83,5 +105,5 @@ void rechitsum_loop(int df){
     c3->Print(cname3);
     c4->Print(cname4);
     c5->Print(cname5);
-    c_res->Print(cnamegr);
+    c_res->Print(cnamegr);*/
 }
