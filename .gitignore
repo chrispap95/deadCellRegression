@@ -6,3 +6,10 @@
 *.png
 .DS_Store
 *.gif
+rootFiles/
+data/cmssw/
+dataset/
+outputFiles/
+outputFiles2/
+trainedNNs/
+*.tar.gz
