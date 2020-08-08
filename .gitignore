@@ -9,7 +9,7 @@
 *.gz
 *.tgz
 rootFiles/
-data/cmssw/
+data/
 dataset/
 outputFiles/
 outputFiles2/
@@ -22,3 +22,5 @@ trainedNNs/
 *.jpg
 *.png
 *.gif
+paperOutput/
+plots/
