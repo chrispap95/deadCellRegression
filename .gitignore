@@ -2,19 +2,24 @@
 *~
 .DS_Store
 *.icloud
+docker_stderror
+*.log
+*.stderr
+*.stdout
 
 #Data files
 *.root
 *.tar
 *.gz
 *.tgz
+dataset/
+temp/
 rootFiles/
 data/
 dataset/
 outputFiles/
 outputFiles2/
 trainedNNs/
-
 
 # Image/PDF files
 *.eps

@@ -4,7 +4,7 @@
     gPad->SetTickx();
     gPad->SetTicky();
     gPad->SetLogz();
-    TFile* f = TFile::Open("data/cmssw/TrainingSamples/out_E0to3000Eta1p7_df01.root");
+    TFile* f = TFile::Open("data/TrainingSamples/TrainingSamples_excludeDead2/out_E0to3000Eta1p7_excluded.root");
     TTree* t = dynamic_cast< TTree* >(f->Get("t1"));
     Float_t n1, n2, n3, n4, n5, n6, nup, ndown, dead, rechitsum;
     Float_t un1, un2, un3, un4, un5, un6;
@@ -47,8 +47,10 @@
             float layer_up = un1+un2+un3+un4+un5+un6+nup;
             float av_layer = layer_down/2+layer_up/2;
             float rechit = av_layer-n1-n2-n3-n4-n5-n6;
-            //float rechit = (ndown/2+nup/2);
-            h_avbias->Fill(dead,rechit-dead);
+            rechit = 0;
+            if(nup >= 0) rechit += nup/2.;
+            if(ndown >= 0) rechit += ndown/2.;
+            h_avbias->Fill(dead,dead-rechit);
             avdevquad += pow(dead-rechit,2);
             n++;
         }

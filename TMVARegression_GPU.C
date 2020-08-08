@@ -49,7 +49,7 @@ invoked through a GUI that will appear at the end of the run of this macro.
 
 using namespace TMVA;
 
-void TMVARegression_layerSum( TString uniqueID, TString nTrain , TString nTest , TString nodes , TString myMethodList = "" )
+void TMVARegression_GPU( TString uniqueID, TString nTrain , TString nTest , TString nodes , TString myMethodList = "" )
 {
    /*
    The explicit loading of the shared libTMVA is done in TMVAlogon.C, defined in .rootrc
@@ -65,16 +65,19 @@ void TMVARegression_layerSum( TString uniqueID, TString nTrain , TString nTest ,
    // This loads the library
    TMVA::Tools::Instance();
 
+   //TString uniqueid = "TMVAReg_flat_cmssw_full_10k";
    TString uniqueid = uniqueID;
 
    // Default MVA methods to be trained + tested
    std::map<std::string,int> Use;
 
-#ifdef R__HAS_TMVACPU
-   Use["DNN_CPU"] = 1;
-#else
-   Use["DNN_CPU"] = 0;
-#endif
+
+//#ifdef R__HAS_TMVAGPU
+   Use["DNN_GPU"] = 1;
+//#else
+//   Use["DNN_GPU"] = 0;
+//#endif
+
    // ---------------------------------------------------------------
 
    std::cout << std::endl;
@@ -164,7 +167,7 @@ void TMVARegression_layerSum( TString uniqueID, TString nTrain , TString nTest ,
    but will appear in the final "TestTree" produced by TMVA. This TestTree will contain the
    input variables, the response values of all trained MVAs, and the spectator variables
    */
-   //dataloader->AddSpectator( "spec1:=rechitsum",  "Spectator 1", "units", 'F' );
+   //dataloader->AddSpectator( "spec1:=var1*2",  "Spectator 1", "units", 'F' );
    //dataloader->AddSpectator( "spec2:=var1*3",  "Spectator 2", "units", 'F' );
 
 
@@ -180,7 +183,7 @@ void TMVARegression_layerSum( TString uniqueID, TString nTrain , TString nTest ,
 
    //load the signal and background event samples from ROOT trees
    TFile *input(0);
-   TString fname = "data/cmssw/TrainingSamples/out_E0to3000Eta1p7_df01_converted.root";
+   TString fname = "root://cmseos.fnal.gov//store/user/chpapage/DeadCellsSamples_correct/TrainingSamples/out_E0to3000Eta1p7_df01_converted.root";
    if (!gSystem->AccessPathName( fname )) {
       input = TFile::Open( fname ); // check if file in local directory exists
    }
@@ -237,8 +240,9 @@ void TMVARegression_layerSum( TString uniqueID, TString nTrain , TString nTest ,
    */
 
 
-   if (Use["DNN_CPU"]) {
+   if (Use["DNN_GPU"]) {
       TString layoutString("Layout=SYMMRELU|22,Layout=SYMMRELU|"+nodes+",Layout=SYMMRELU|"+nodes+",Layout=SYMMRELU|"+nodes+",LINEAR");
+
       TString training0("LearningRate=1e-2,Momentum=0.5,Repetitions=1,ConvergenceSteps=20,BatchSize=200,"
                         "TestRepetitions=10,WeightDecay=0.01,Regularization=NONE,DropConfig=0.2+0.2+0.2+0.,"
                         "DropRepetitions=2");
@@ -258,14 +262,14 @@ void TMVARegression_layerSum( TString uniqueID, TString nTrain , TString nTest ,
       //       ("TrainingStrategy=LearningRate=1e-1,Momentum=0.3,Repetitions=3,ConvergenceSteps=20,BatchSize=30,TestRepetitions=7,WeightDecay=0.0,L1=false,DropFraction=0.0,DropRepetitions=5");
 
       TString nnOptions(
-         "!H:V:ErrorStrategy=SUMOFSQUARES:VarTransform=G:WeightInitialization=XAVIERUNIFORM:Architecture=CPU");
+         "!H:V:ErrorStrategy=SUMOFSQUARES:VarTransform=G:WeightInitialization=XAVIERUNIFORM:Architecture=GPU");
       //       TString nnOptions ("!H:V:VarTransform=Normalize:ErrorStrategy=CHECKGRADIENTS");
       nnOptions.Append(":");
       nnOptions.Append(layoutString);
       nnOptions.Append(":");
       nnOptions.Append(trainingStrategyString);
 
-      factory->BookMethod(dataloader, TMVA::Types::kDNN, "DNN_CPU", nnOptions); // NN
+      factory->BookMethod(dataloader, TMVA::Types::kDNN, "DNN_GPU", nnOptions); // NN
    }
 
    // --------------------------------------------------------------------------------------------------
