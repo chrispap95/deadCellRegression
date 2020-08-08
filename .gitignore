@@ -6,3 +6,12 @@
 *.png
 .DS_Store
 *.gif
+*.log
+*.stderr
+*.stdout
+dataset/
+temp/
+*.tgz
+*.tar
+*.gz
+docker_stderror
