@@ -1,15 +1,24 @@
+# Temporary/System/Log files
 *~
-*.root
-*.eps
-*.pdf
-*.jpg
-*.png
 .DS_Store
-*.gif
+*.icloud
+
+#Data files
+*.root
+*.tar
+*.gz
+*.tgz
 rootFiles/
 data/cmssw/
 dataset/
 outputFiles/
 outputFiles2/
 trainedNNs/
-*.tar.gz
+
+
+# Image/PDF files
+*.eps
+*.pdf
+*.jpg
+*.png
+*.gif
