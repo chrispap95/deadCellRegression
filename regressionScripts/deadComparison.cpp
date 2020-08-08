@@ -1,4 +1,4 @@
-#include "RootStyle.cc"
+#include "../RootStyle.cc"
 
 void deadComparison(){
     //set_root_style();

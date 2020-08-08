@@ -1,1 +1,0 @@
-condor_submit condor_jobs.jdl

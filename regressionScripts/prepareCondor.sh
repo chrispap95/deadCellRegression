@@ -1,8 +1,13 @@
 #!/bin/sh
 USERBASE=`pwd`
-rm CMSSW_10_6_3_patch1.tgz
-cd ../../../
-tar --exclude="*.root" --exclude=CMSSW_10_6_3_patch1/src/deadCellRegression/cmsswTrain_full_E0to3000_4cores_5M_60nodes_3hl.tar.gz --exclude-vcs -zcvf CMSSW_10_6_3_patch1.tgz CMSSW_10_6_3_patch1/
-# xrdcp -f CMSSW_10_6_3_patch1.tgz root://cmseos.fnal.gov//store/user/chpapage/CMSSW_10_6_3_patch1.tgz
-mv CMSSW_10_6_3_patch1.tgz CMSSW_10_6_3_patch1/src/deadCellRegression
+rm ${CMSSW_VERSION}.tgz
+cd ../../../../
+echo "Creating tarball..."
+tar --exclude="*.root" --exclude=${CMSSW_BASE}/src/ResolutionAnalyzer --exclude-vcs -zcf ${CMSSW_VERSION}.tgz ${CMSSW_VERSION}
+mv ${CMSSW_VERSION}.tgz ${CMSSW_VERSION}/src/deadCellRegression
 cd $USERBASE
+if [ ! -f ${CMSSW_VERSION}.tgz ]; then
+echo "Error: tarball doesn't exist!"
+else
+echo -n " Done!"
+fi

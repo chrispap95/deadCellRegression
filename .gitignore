@@ -6,6 +6,7 @@ docker_stderror
 *.log
 *.stderr
 *.stdout
+regressionScripts/logs
 
 #Data files
 *.root
