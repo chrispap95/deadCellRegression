@@ -65,7 +65,6 @@ void TMVARegression_layerSum( TString uniqueID, TString nTrain , TString nTest ,
    // This loads the library
    TMVA::Tools::Instance();
 
-   //TString uniqueid = "TMVAReg_flat_cmssw_full_10k";
    TString uniqueid = uniqueID;
 
    // Default MVA methods to be trained + tested
@@ -165,7 +164,7 @@ void TMVARegression_layerSum( TString uniqueID, TString nTrain , TString nTest ,
    but will appear in the final "TestTree" produced by TMVA. This TestTree will contain the
    input variables, the response values of all trained MVAs, and the spectator variables
    */
-   //dataloader->AddSpectator( "spec1:=var1*2",  "Spectator 1", "units", 'F' );
+   //dataloader->AddSpectator( "spec1:=rechitsum",  "Spectator 1", "units", 'F' );
    //dataloader->AddSpectator( "spec2:=var1*3",  "Spectator 2", "units", 'F' );
 
 
@@ -181,7 +180,7 @@ void TMVARegression_layerSum( TString uniqueID, TString nTrain , TString nTest ,
 
    //load the signal and background event samples from ROOT trees
    TFile *input(0);
-   TString fname = "root://cmseos.fnal.gov//store/user/chpapage/DeadCellsSamples_correct/TrainingSamples_excludeDead2/out_E0to3000Eta1p7_excluded_converted.root";
+   TString fname = "data/cmssw/TrainingSamples/out_E0to3000Eta1p7_df01_converted.root";
    if (!gSystem->AccessPathName( fname )) {
       input = TFile::Open( fname ); // check if file in local directory exists
    }
@@ -240,7 +239,6 @@ void TMVARegression_layerSum( TString uniqueID, TString nTrain , TString nTest ,
 
    if (Use["DNN_CPU"]) {
       TString layoutString("Layout=SYMMRELU|22,Layout=SYMMRELU|"+nodes+",Layout=SYMMRELU|"+nodes+",Layout=SYMMRELU|"+nodes+",LINEAR");
-
       TString training0("LearningRate=1e-2,Momentum=0.5,Repetitions=1,ConvergenceSteps=20,BatchSize=200,"
                         "TestRepetitions=10,WeightDecay=0.01,Regularization=NONE,DropConfig=0.2+0.2+0.2+0.,"
                         "DropRepetitions=2");

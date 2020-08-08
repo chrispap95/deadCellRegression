@@ -6,7 +6,7 @@
     gPad->SetLogz();
     TFile* f = TFile::Open("data/TrainingSamples/TrainingSamples_excludeDead2/out_E0to3000Eta1p7_excluded.root");
     TTree* t = dynamic_cast< TTree* >(f->Get("t1"));
-    Float_t n1, n2, n3, n4, n5, n6, nup, ndown, dead;
+    Float_t n1, n2, n3, n4, n5, n6, nup, ndown, dead, rechitsum;
     Float_t un1, un2, un3, un4, un5, un6;
     Float_t dn1, dn2, dn3, dn4, dn5, dn6;
     t->SetBranchAddress( "MLn1", &n1 );
@@ -30,11 +30,12 @@
     t->SetBranchAddress( "MLdn4", &dn4 );
     t->SetBranchAddress( "MLdn5", &dn5 );
     t->SetBranchAddress( "MLdn6", &dn6 );
+    t->SetBranchAddress( "MLrechitsum", &rechitsum );
 
     float xstart = 0;
     TH2F* h_avbias = new TH2F("h_avbias",
-        "Averaging method 2.0 bias;Rechit_{true} [GeV];Rechit_{true}-Rechit_{av}",
-        100,xstart,40,100,-20,20);
+        ";recHit_{truth}[GeV];recHit_{av}-recHit_{truth}[GeV]",
+        50,xstart,50,50,-70,60);
     float avdevquad = 0;
     int n = 0;
     TLine* l = new TLine(xstart,0,0.4,0);
@@ -55,12 +56,15 @@
         }
     }
     avdevquad = sqrt(avdevquad/(float)n);
-    h_avbias->GetXaxis()->SetTitleOffset(1.2);
-    TLatex ltx;
+    h_avbias->GetXaxis()->SetTitleOffset(1.1);
+    h_avbias->GetYaxis()->SetTitleOffset(0.9);
+    h_avbias->GetXaxis()->SetTitleSize(0.04);
+    h_avbias->GetYaxis()->SetTitleSize(0.045);
     h_avbias->Draw("colz");
+    /*TLatex ltx;
     l->Draw();
     ltx.SetTextSize(0.035);
     ltx.DrawLatex(xstart+0.003,h_avbias->GetYaxis()->GetXmax()*1.05,
-    "HGCAL#scale[0.8]{#font[12]{Internal}}");
-    cout << "average quadratic deviation = " << avdevquad << endl;
+    "HGCAL#scale[0.8]{#font[12]{Simulation work in progress}}");
+    cout << "average quadratic deviation = " << avdevquad << endl;*/
 }

@@ -15,3 +15,9 @@ temp/
 *.tar
 *.gz
 docker_stderror
+rootFiles/
+data/cmssw/
+dataset/
+outputFiles/
+outputFiles2/
+trainedNNs/
