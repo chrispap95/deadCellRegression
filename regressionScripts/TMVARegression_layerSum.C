@@ -1,33 +1,3 @@
-/*
-\file
-\ingroup tutorial_tmva
-\notebook -nodraw
-This macro provides examples for the training and testing of the
-TMVA classifiers.
-
-As input data is used a toy-MC sample consisting of four Gaussian-distributed
-and linearly correlated input variables.
-
-The methods to be used can be switched on and off by means of booleans, or
-via the prompt command, for example:
-
-    root -l TMVARegression.C\(\"LD,MLP\"\)
-
-(note that the backslashes are mandatory)
-If no method given, a default set is used.
-
-The output file "TMVAReg.root" can be analysed with the use of dedicated
-macros (simply say: root -l <macro.C>), which can be conveniently
-invoked through a GUI that will appear at the end of the run of this macro.
-- Project   : TMVA - a Root-integrated toolkit for multivariate data analysis
-- Package   : TMVA
-- Root Macro: TMVARegression
-
-\macro_output
-\macro_code
-\author Andreas Hoecker
-*/
-
 #include <cstdlib>
 #include <iostream>
 #include <map>
@@ -43,24 +13,11 @@ invoked through a GUI that will appear at the end of the run of this macro.
 
 #include "TMVA/Tools.h"
 #include "TMVA/Factory.h"
-//#include "TMVA/DataLoader.h"
-//#include "TMVA/TMVARegGui.h"
-
 
 using namespace TMVA;
 
 void TMVARegression_layerSum( TString uniqueID, TString nTrain , TString nTest , TString nodes , TString myMethodList = "" )
 {
-   /*
-   The explicit loading of the shared libTMVA is done in TMVAlogon.C, defined in .rootrc
-   if you use your private .rootrc, or run from a different directory, please copy the
-   corresponding lines from .rootrc
-
-   methods to be processed can be given as an argument; use format:
-
-        mylinux~> root -l TMVARegression.C\(\"myMethod1,myMethod2,myMethod3\"\)
-   */
-
    //---------------------------------------------------------------
    // This loads the library
    TMVA::Tools::Instance();
@@ -79,24 +36,6 @@ void TMVARegression_layerSum( TString uniqueID, TString nTrain , TString nTest ,
 
    std::cout << std::endl;
    std::cout << "==> Start TMVARegression" << std::endl;
-
-   // Select methods (don't look at this code - not of interest)
-   if (myMethodList != "") {
-      for (std::map<std::string,int>::iterator it = Use.begin(); it != Use.end(); it++) it->second = 0;
-
-      std::vector<TString> mlist = gTools().SplitString( myMethodList, ',' );
-      for (UInt_t i=0; i<mlist.size(); i++) {
-         std::string regMethod(mlist[i]);
-
-         if (Use.find(regMethod) == Use.end()) {
-            std::cout << "Method \"" << regMethod << "\" not known in TMVA under this name. Choose among the following:" << std::endl;
-            for (std::map<std::string,int>::iterator it = Use.begin(); it != Use.end(); it++) std::cout << it->first << " ";
-            std::cout << std::endl;
-            return;
-         }
-         Use[regMethod] = 1;
-      }
-   }
 
    // --------------------------------------------------------------------------------------------------
 
@@ -180,14 +119,10 @@ void TMVARegression_layerSum( TString uniqueID, TString nTrain , TString nTest ,
 
    //load the signal and background event samples from ROOT trees
    TFile *input(0);
-   TString fname = "data/cmssw/TrainingSamples/out_E0to3000Eta1p7_df01_converted.root";
+   TString fname = "data/TrainingSamples/out_E0to3000Eta1p7_df01.root";
    if (!gSystem->AccessPathName( fname )) {
       input = TFile::Open( fname ); // check if file in local directory exists
    }
-   // else {
-   //   TFile::SetCacheFileDir(".");
-   //   input = TFile::Open("http://root.cern.ch/files/tmva_reg_example.root", "CACHEREAD"); // if not: download from ROOT server
-   //}
    if (!input) {
       std::cout << "ERROR: could not open data file" << std::endl;
       exit(1);
@@ -294,18 +229,5 @@ void TMVARegression_layerSum( TString uniqueID, TString nTrain , TString nTest ,
 
    // Launch the GUI for the root macros
    if (!gROOT->IsBatch()) TMVA::TMVARegGui( outfileName );
-}
-
-int main( int argc, char** argv )
-{
-   // Select methods (don't look at this code - not of interest)
-   TString methodList;
-   for (int i=1; i<argc; i++) {
-      TString regMethod(argv[i]);
-      if(regMethod=="-b" || regMethod=="--batch") continue;
-      if (!methodList.IsNull()) methodList += TString(",");
-      methodList += regMethod;
-   }
-   //TMVARegression_layerSum(methodList);
-   return 0;
+   return
 }

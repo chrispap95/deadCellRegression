@@ -1,108 +1,129 @@
-#include "rechitsum_new.C"
+#include "rechitSum.C"
 
-void rechitsum_loop(int df){
-    gStyle->SetOptStat(0);
-    gStyle->SetOptFit();
+void rechitSumLooper(int df, TString method = "none", bool printCanvases = 1){
+  /* Input section
+  ** This section needs editing.
+  ** energies: put the discrete energies you have in this list
+  ** bins: 100 is usually okay but you may optimize it
+  ** histRange: rows are for dead fractions,
+  **            columns are for the range around the nominal energy value.
+  **            You will need to optimize this manually.
+  ** fitRange: range around mean to be used for fitting. Also needs manual optimization.
+  ** deadfrac: maps a dead fraction number (in %) to the row number
+  */
+  double energies[]    =  { 10, 60,100,200,400,550};
+  int bins[]           =  {100,100,100,100,100,100};
+  int histRange[][6]   = {
+    {5, 15, 15, 25, 40, 50},
+    {5, 15, 20, 40, 70,120},
+    {5, 17, 20, 50, 80,100},
+    {5, 17, 30, 60,100,150}
+  };
+  double fitRange[][6] = {
+    {1.6,1.6,1.6,1.2,1.2,1.1},
+    {1.6,1.6,1.6,1.6,1.6,1.6},
+    {1.6,1.5,1.5,1.2,1.0,1.0},
+    {1.6,1.6,1.6,1.6,1.6,1.6}
+  };
+  std::map<int,int> deadfrac;
+  // deadfrac[ dead fraction in % ] = (row index)
+  deadfrac[0] = 0;
+  deadfrac[1] = 0;
+  deadfrac[3] = 1;
+  deadfrac[5] = 2;
+  deadfrac[7] = 3;
 
-    TCanvas* c1 = new TCanvas("c1","c1",1000,800);
-    TCanvas* c2 = new TCanvas("c2","c2",1000,800);
-    TCanvas* c3 = new TCanvas("c3","c3",1000,800);
-    TCanvas* c4 = new TCanvas("c4","c4",1000,800);
-    TCanvas* c5 = new TCanvas("c5","c5",1000,800);
-    c1->Divide(3,2);
-    c2->Divide(2,2);
-    c3->Divide(2,2);
-    c4->Divide(2,2);
-    c5->Divide(2,2);
-
-    //Note: for df = 0 change correction in rechitsum_new()
-    int deadfrac[] = {0,0,-1,1,-1,2,-1,3};
-
-    double energies[]  =  {  5, 10, 15, 20, 30, 40, 60, 80,100,140,200,280,400,550,750,1000,1400,2000,2800};
-    int bins[]           =  {100,100,100,100,100,100,100,100,100,100,100,100,100,100,100, 100, 100, 100, 100};
-    int range[][19]      = {
-                            {  3,  5,  5, 10, 10, 10, 15, 15, 15, 20, 25, 30, 40, 50,100, 150, 400, 800,1100},
-                            {  3,  5,  5, 10, 10, 10, 15, 15, 15, 20, 35, 40, 60, 70,120, 250, 400, 800,1100},
-                            {  3,  5,  5, 10, 12, 13, 17, 20, 20, 25, 50, 60, 80,100,150, 250, 400, 800,1100},
-                            {  3,  5,  5, 10, 12, 13, 17, 20, 20, 30, 50, 60, 80,100,150, 250, 400, 800,1100}
-                           };
-    double fit_cut[][19] = {
-                            {1.6,1.6,1.6,1.6,1.6,1.6,1.6,1.6,1.6,1.6,1.6,1.6,1.1,1.0,1.2, 1.3, 1.3, 1.3, 1.3},
-                            {1.6,1.6,1.6,1.6,1.6,1.6,1.6,1.6,1.6,1.5,1.2,1.2,1.0,1.0,1.0, 1.0, 1.1, 1.1, 1.1},
-                            {1.6,1.6,1.6,1.6,1.5,1.5,1.5,1.5,1.5,1.4,1.2,1.1,1.0,1.0,1.0, 1.0, 1.1, 1.1, 1.1},
-                            {1.6,1.6,1.6,1.6,1.6,1.6,1.6,1.6,1.6,1.6,1.2,1.2,1.0,1.0,0.8, 1.0, 1.1, 1.1, 1.1}
-                           };
-
-    double scemean[]   = {0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.};
-    double scemeane[]  = {0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.};
-    double sceres[]    = {0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.};
-    double scerese[]   = {0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.};
-    double energiese[] = {0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.};
-
-    double energies[]    =  { 10, 60,100,200,400,550};
-    int bins[]           =  {100,100,100,100,100,100};
-    int range[][19]      = {
-                            {  5, 15, 15, 25, 40, 50},
-                            {  5, 15, 20, 40, 70,120},
-                            {  5, 17, 20, 50, 80,100},
-                            {  5, 17, 30, 60,100,150}
-                           };
-    double fit_cut[][19] = {
-                            {1.6,1.6,1.6,1.2,1.2,1.1},
-                            {1.6,1.6,1.6,1.6,1.6,1.6},
-                            {1.6,1.5,1.5,1.2,1.0,1.0},
-                            {1.6,1.6,1.6,1.6,1.6,1.6}
-                           };
-
-    double scemean[]   = {0.,0.,0.,0.,0.,0.};
-    double scemeane[]  = {0.,0.,0.,0.,0.,0.};
-    double sceres[]    = {0.,0.,0.,0.,0.,0.};
-    double scerese[]   = {0.,0.,0.,0.,0.,0.};
-    double energiese[] = {0.,0.,0.,0.,0.,0.};
-
-    for(int j = 0; j < 19; ++j){
-        if(j < 4) c1->cd(j%4+1);
-        else if(j < 8) c2->cd(j%4+1);
-        else if(j < 12) c3->cd(j%4+1);
-        else if(j < 16) c4->cd(j%4+1);
-        else c5->cd(j%4+1);
-        std::vector<double> temp = rechitsum_new(energies[j],df,bins[j],range[deadfrac[df]][j],fit_cut[deadfrac[df]][j]);
-        scemean[j]  = temp[1];
-        scemeane[j] = temp[4];
-        //sceres[j]   = temp[2]/energies[j];
-        sceres[j]   = temp[2]/temp[1];
-        scerese[j]  = sceres[j]*sqrt(pow(temp[5]/temp[2],2)+pow(temp[4]/temp[1],2));
-        std::cout << " fit results for "  << energies[j]
-        << " mean " << scemean[j] << "+-" << scemeane[j]
-        << " res "  << sceres[j]  << "+-" << scerese[j] << std::endl;
+  // Define all regression methods and check for sane input
+  TString methods[] = {"none","MLregr","aver","LSaver"};
+  int nMeth = sizeof(methods)/sizeof(methods[0]);
+  for (int i = 0; i < nMeth; i++) {
+    if (method == methods) break;
+    if (i == nMeth-1) {
+      std::cerr << "Error: Regression method " + method + " not known." << std::endl;;
+      return;
     }
+  }
 
-    TCanvas* c_res = new TCanvas("c_res","c_res",1);
-    TGraphErrors *gr = new TGraphErrors(14,energies,sceres,energiese,scerese);
-    gr->SetTitle("gamma resolution versus energy;E [GeV];width/mean");
-    gr->SetMarkerColor(4);
-    gr->SetMarkerStyle(21);
-    TF1  *f2 = new TF1("f2","sqrt(([0]/sqrt(x))**2+([1]/x)**2+([2])**2)");
-    f2->SetNpx(1000);
-    gr->Fit("f2");
-    gr->Draw("AP");
+  int nEnergies = sizeof(energies)/sizeof(energies[0]);
+  double scemean[nEnergies];
+  double scemeane[nEnergies];
+  double sceres[nEnergies];
+  double scerese[nEnergies];
+  double energiese[nEnergies];
 
-    TString outname = "outputFiles/out0"+to_string(df)+"_LSaver.root";
-    TFile* out = new TFile(outname,"RECREATE");
-    gr->Write();
-    out->Close();
+  for(int i = 0; i < nEnergies; ++i) {
+    scemean[nEnergies]   = 0;
+    scemeane[nEnergies]  = 0;
+    sceres[nEnergies]    = 0;
+    scerese[nEnergies]   = 0;
+    energiese[nEnergies] = 0;
+  }
 
-    //Print PDFs
-    TString cname1  = "outputFiles/canvas1_df0"+to_string(df)+"_LSaver.pdf";
-    TString cname2  = "outputFiles/canvas2_df0"+to_string(df)+"_LSaver.pdf";
-    TString cname3  = "outputFiles/canvas3_df0"+to_string(df)+"_LSaver.pdf";
-    TString cname4  = "outputFiles/canvas4_df0"+to_string(df)+"_LSaver.pdf";
-    TString cname5  = "outputFiles/canvas5_df0"+to_string(df)+"_LSaver.pdf";
-    TString cnamegr = "outputFiles/resplot_df0"+to_string(df)+"_LSaver.pdf";
-    c1->Print(cname1);
-    c2->Print(cname2);
-    c3->Print(cname3);
-    c4->Print(cname4);
-    c5->Print(cname5);
+  double scemean[]   = {0.,0.,0.,0.,0.,0.};
+  double scemeane[]  = {0.,0.,0.,0.,0.,0.};
+  double sceres[]    = {0.,0.,0.,0.,0.,0.};
+  double scerese[]   = {0.,0.,0.,0.,0.,0.};
+  double energiese[] = {0.,0.,0.,0.,0.,0.};
+
+  gStyle->SetOptStat(0);
+  gStyle->SetOptFit();
+
+  // Find how many canvases are needed and create them
+  int nCanv = nEnergies/4;
+  if (nCanv%4 != 0) nCanv++;
+  TCanvas* c[nCanv];
+  for (int i = 0; i < nCanv; ++i) {
+    c[i] = new TCanvas("c"+std::to_string(i),"c"+std::to_string(i),1000,800);
+    c[i]->Divide(2,2);
+  }
+
+  for(int j = 0; j < nEnergies; ++j){
+    if(j%4 == 0) c[j/4]->cd(j%4+1);
+    std::vector<double> temp = rechitsum_new(
+      energies[j],
+      df,
+      histRange[deadfrac[df]][j],
+      bins[j],
+      fit_cut[deadfrac[df]][j],
+      method
+    );
+    // Get mean and width of the peak
+    scemean[j]  = temp[1];
+    scemeane[j] = temp[4];
+    // Calculate resolution: res = mean/width
+    // Error propagation for the uncertainty
+    sceres[j]   = temp[2]/temp[1];
+    scerese[j]  = sceres[j]*sqrt(pow(temp[5]/temp[2],2)+pow(temp[4]/temp[1],2));
+    std::cout << " fit results for "  << energies[j]
+    << " mean " << scemean[j] << "+-" << scemeane[j]
+    << " res "  << sceres[j]  << "+-" << scerese[j] << std::endl;
+  }
+
+  // Plot and fit the resolutioin vs energy
+  TCanvas* c_res = new TCanvas("c_res","c_res",1);
+  TGraphErrors *gr = new TGraphErrors(14,energies,sceres,energiese,scerese);
+  gr->SetTitle("gamma resolution versus energy;E [GeV];width/mean");
+  gr->SetMarkerColor(4);
+  gr->SetMarkerStyle(21);
+  TF1  *f2 = new TF1("f2","sqrt(([0]/sqrt(x))**2+([1]/x)**2+([2])**2)");
+  f2->SetNpx(1000);
+  gr->Fit("f2");
+  gr->Draw("AP");
+
+  TString outname = "outputFiles/out0"+to_string(df)+"_"+method+"r.root";
+  TFile* out = new TFile(outname,"RECREATE");
+  gr->Write();
+  out->Close();
+
+  //Print PDFs
+  if (printCanvases) {
+    TString cname[nCanv];
+    for (int i = 0; i < nCanv; i++) {
+      TString cname[i] = "outputFiles/canvas"+to_string(i)+"_df0"+to_string(df)+"_"+method+".pdf";
+      c[i]->Print(cname[i]);
+    }
+    TString cnamegr = "outputFiles/resplot_df0"+to_string(df)+"_"+method+".pdf";
     c_res->Print(cnamegr);
+  }
+  return;
 }
