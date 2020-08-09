@@ -1,6 +1,6 @@
 #include "rechitSum.C"
 
-void rechitSumLooper(int df, TString method = "none", bool printCanvases = 0){
+void rechitSumLooper(int df, TString method = "none", bool printCanvases = 1){
   /* Input section
   ** This section needs editing.
   ** energies: put the discrete energies you have in this list

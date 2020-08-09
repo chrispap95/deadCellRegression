@@ -17,7 +17,7 @@
 using namespace TMVA;
 
 void TMVARegression( TString fname, TString uniqueID = "testRun", TString nTrain = "1000",
-                              TString nTest = "200",int Nlayers TString nodes = "20")
+                              TString nTest = "200",int Nlayers = 3,TString nodes = "20")
 {
    //---------------------------------------------------------------
    // This loads the library
