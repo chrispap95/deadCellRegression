@@ -5,9 +5,9 @@ std::vector<double> rechitSum(int En, int df, int range, int bins = 100,
   TString filename = "";
   TString inputPath = "root://cmseos.fnal.gov//store/user/ksturge/DeadCellsSamples_correct/EvaluationSamples/";
   if(df) {
-    filename = inputPath + "out_E"+to_string(En)+"Eta1p62_d0"+to_string(df)+".root";
+    filename = inputPath+"out_E"+(TString)to_string(En)+"Eta1p62_df0"+(TString)to_string(df)+".root";
   }else {
-    filename = inputPath + "out_E"+to_string(En)+"Eta1p62_d01.root";
+    filename = inputPath+"out_E"+(TString)to_string(En)+"Eta1p62_df01.root";
   }
   TFile* fin = TFile::Open(filename);
   TTree* t1 = dynamic_cast< TTree* >(fin->Get("t1"));
@@ -72,16 +72,19 @@ std::vector<double> rechitSum(int En, int df, int range, int bins = 100,
     }
     if(event_tmp != event) {
       if (!df) {
-        switch (method) {
-          case "none":
-            h1->Fill(rechitsum);
-          case "MLregr":
-            h1->Fill(rechitsum_MLregr);
-          case "aver":
-            h1->Fill(rechitsum_aver);
-          case "LSaver":
-            h1->Fill(rechitsum_LSaver);
-          default:
+        if (method == "none") {
+          h1->Fill(rechitsum);
+        }
+        else if (method == "MLregr") {
+          h1->Fill(rechitsum_MLregr);
+        }
+        else if (method == "LSaver") {
+          h1->Fill(rechitsum_LSaver);
+        }
+        else if (method == "aver") {
+          h1->Fill(rechitsum_aver);
+        }
+        else {
             cerr << "Something bad happened. Method " + method + " not recognized!";
         }
       } else {

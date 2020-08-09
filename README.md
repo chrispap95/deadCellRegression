@@ -1,19 +1,17 @@
 # deadCellRegression
 
 Repository for ML study on dead Si cells rechit regression.
+For use with ROOT > 6.10.04 (CMSSW_9_3_2)
 
-for use with root 6.10.04 (CMSSW_9_3_2)
-
-
-setup a cmssw release
+Setup latest CMSSW release
 ```bash
-cmsrel CMSSW_9_3_2
-cd CMSSW_9_3_2/src
+cmsrel CMSSW_11_2_0_pre2
+cd CMSSW_11_2_0_pre2/src
 cmsenv
 ```
 
 get the repository
-```bash 
+```bash
 git clone https://github.com/chrispap95/deadCellRegression.git
 ```
 
@@ -27,7 +25,7 @@ run the regression
 root -l TMVARegression.C
 ```
 
-to use the result 
+to use the result
 ```bash
 root -l TMVARegressionApplication.C
 ```

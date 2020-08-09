@@ -16,7 +16,8 @@
 
 using namespace TMVA;
 
-void TMVARegression_layerSum( TString uniqueID, TString nTrain , TString nTest , TString nodes , TString myMethodList = "" )
+void TMVARegression( TString fname, TString uniqueID = "testRun", TString nTrain = "1000",
+                              TString nTest = "200",int Nlayers TString nodes = "20")
 {
    //---------------------------------------------------------------
    // This loads the library
@@ -119,7 +120,6 @@ void TMVARegression_layerSum( TString uniqueID, TString nTrain , TString nTest ,
 
    //load the signal and background event samples from ROOT trees
    TFile *input(0);
-   TString fname = "data/TrainingSamples/out_E0to3000Eta1p7_df01.root";
    if (!gSystem->AccessPathName( fname )) {
       input = TFile::Open( fname ); // check if file in local directory exists
    }
@@ -173,7 +173,11 @@ void TMVARegression_layerSum( TString uniqueID, TString nTrain , TString nTest ,
 
 
    if (Use["DNN_CPU"]) {
-      TString layoutString("Layout=SYMMRELU|22,Layout=SYMMRELU|"+nodes+",Layout=SYMMRELU|"+nodes+",Layout=SYMMRELU|"+nodes+",LINEAR");
+      TString layoutString("Layout=TANH|22");
+      for (int i = 0; i < Nlayers; ++i) {
+        layoutString += ",Layout=TANH|"+nodes
+      }
+      layoutString += ",LINEAR"
       TString training0("LearningRate=1e-2,Momentum=0.5,Repetitions=1,ConvergenceSteps=20,BatchSize=200,"
                         "TestRepetitions=10,WeightDecay=0.01,Regularization=NONE,DropConfig=0.2+0.2+0.2+0.,"
                         "DropRepetitions=2");
@@ -229,5 +233,5 @@ void TMVARegression_layerSum( TString uniqueID, TString nTrain , TString nTest ,
 
    // Launch the GUI for the root macros
    if (!gROOT->IsBatch()) TMVA::TMVARegGui( outfileName );
-   return
+   return;
 }

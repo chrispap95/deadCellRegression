@@ -1,6 +1,6 @@
 universe = vanilla
 Executable = condor-exec.csh
-Arguments = 82 12000000 4000000
+Arguments = 3 40 1000000 200000
 Should_Transfer_Files = YES
 WhenToTransferOutput = ON_EXIT
 request_cpus = 4
