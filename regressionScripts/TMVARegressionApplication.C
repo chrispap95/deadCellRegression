@@ -30,74 +30,24 @@
 
 using namespace TMVA;
 
-void TMVARegressionApplication( TString myMethodList = "" )
-{
+void TMVARegressionApplication_dnn(int energy, int deadfrac) {
     //---------------------------------------------------------------
     // This loads the library
     TMVA::Tools::Instance();
 
-    // Default MVA methods to be trained + tested
-    std::map<std::string,int> Use;
-
-    // --- Mutidimensional likelihood and Nearest-Neighbour methods
-    Use["PDERS"]           = 0;
-    Use["PDEFoam"]         = 0;
-    Use["KNN"]             = 0;
-    //
-    // --- Linear Discriminant Analysis
-    Use["LD"]		        = 0;
-    //
-    // --- Function Discriminant analysis
-    Use["FDA_GA"]          = 0;
-    Use["FDA_MC"]          = 0;
-    Use["FDA_MT"]          = 0;
-    Use["FDA_GAMT"]        = 0;
-    //
-    // --- Neural Network
-    Use["MLP"] = 0;
-    Use["DNN_CPU"] = 1;
-    //
-    // --- Support Vector Machine
-    Use["SVM"]             = 0;
-    //
-    // --- Boosted Decision Trees
-    Use["BDT"]             = 0;
-    Use["BDTG"]            = 0;
-    // ---------------------------------------------------------------
-
     std::cout << std::endl;
     std::cout << "==> Start TMVARegressionApplication" << std::endl;
 
-    // Select methods (don't look at this code - not of interest)
-    if (myMethodList != "") {
-        for (std::map<std::string,int>::iterator it = Use.begin(); it != Use.end(); it++) it->second = 0;
-
-        std::vector<TString> mlist = gTools().SplitString( myMethodList, ',' );
-        for (UInt_t i=0; i<mlist.size(); i++) {
-            std::string regMethod(mlist[i]);
-
-            if (Use.find(regMethod) == Use.end()) {
-                std::cout << "Method \"" << regMethod << "\" not known in TMVA under this name. Choose among the following:" << std::endl;
-                for (std::map<std::string,int>::iterator it = Use.begin(); it != Use.end(); it++) std::cout << it->first << " ";
-                std::cout << std::endl;
-                return;
-            }
-            Use[regMethod] = 1;
-        }
-    }
-
     // --------------------------------------------------------------------------------------------------
-
     // --- Create the Reader object
 
     TMVA::Reader *reader = new TMVA::Reader( "!Color:!Silent" );
 
     // Create a set of variables and declare them to the reader
     // - the variable names MUST corresponds in name and type to those given in the weight file(s) used
-    Float_t layer, eta, phi, n1, n2, n3, n4, n5, n6, nup, ndown, dead;
+    Float_t layer, eta, phi, n1, n2, n3, n4, n5, n6, nup, ndown, dead, rechitsum, event;
     Float_t un1, un2, un3, un4, un5, un6;
     Float_t dn1, dn2, dn3, dn4, dn5, dn6;
-    Float_t sameLayer, nextLayer, previousLayer, pnCells, sum1, sum2, sum3, sum4, sum
     reader->AddVariable( "layer", &layer);
     reader->AddVariable( "n1", &n1);
     reader->AddVariable( "n2", &n2);
@@ -127,33 +77,30 @@ void TMVARegressionApplication( TString myMethodList = "" )
 
     // --- Book the MVA methods
 
-    TString dir    = "dataset/weights/";
-    TString prefix = "TMVAReg_6Layers_340K_90range";
+    TString dir    = "trainedNNs/dataset/weights/";
+    TString prefix = "cmsswTrain_full_E0to3000_4cores_6M_65nodes_3hl_excludeDead";
 
     // Book method(s)
-    for (std::map<std::string,int>::iterator it = Use.begin(); it != Use.end(); it++) {
-        if (it->second) {
-            TString methodName = it->first + " method";
-            TString weightfile = dir + prefix + "_" + TString(it->first) + ".weights.xml";
-            reader->BookMVA( methodName, weightfile );
-        }
-    }
+    TString methodName = "DNN_CPU method";//it->first + " method";
+    TString weightfile = dir + prefix + "_" + "DNN_CPU" + ".weights.xml";
+    reader->BookMVA( methodName, weightfile );
 
     // Book output histograms
     TH1* hists[100];
     Int_t nhists = -1;
-    for (std::map<std::string,int>::iterator it = Use.begin(); it != Use.end(); it++) {
-        TH1* h = new TH1F( it->first.c_str(), TString(it->first) + " method", 100, 0.,40.);
-        if (it->second) hists[++nhists] = h;
-    }
+    TH1* h = new TH1F( "DNN_CPU","DNN_CPU method", 100, 0.,40.);
+    hists[++nhists] = h;
     nhists++;
 
     // Prepare input tree (this must be replaced by your data source)
     // in this example, there is a toy tree with signal and one with background events
     // we'll later on use only the "signal" events for the test in this example.
     //
+    string energy_str = to_string(energy);
+    string deadfrac_str = to_string(deadfrac);
     TFile *input(0);
-    TString fname = "data/converted_training_sample_full_8samples.root";
+    //TString fname = "data/cmssw/EvaluationSamples/out_E"+energy_str+"Eta1p7_df0"+deadfrac_str+".root";
+    TString fname = "data/cmssw/EvaluationSamples_excludeDead2/out_E"+energy_str+"Eta1p7_df0"+deadfrac_str+"_excludeDead.root";
     if (!gSystem->AccessPathName( fname )) {
         input = TFile::Open( fname ); // check if file in local directory exists
     }
@@ -176,77 +123,134 @@ void TMVARegressionApplication( TString myMethodList = "" )
     //
     TTree* theTree = (TTree*)input->Get("t1");
     std::cout << "--- Select signal sample" << std::endl;
-    theTree->SetBranchAddress( "layer", &layer );
-    theTree->SetBranchAddress( "n1", &n1 );
-    theTree->SetBranchAddress( "n2", &n2 );
-    theTree->SetBranchAddress( "n3", &n3 );
-    theTree->SetBranchAddress( "n4", &n4 );
-    theTree->SetBranchAddress( "n5", &n5 );
-    theTree->SetBranchAddress( "n6", &n6 );
-    theTree->SetBranchAddress( "nup", &nup );
-    theTree->SetBranchAddress( "ndown", &ndown );
-    theTree->SetBranchAddress( "dead", &dead);
-    theTree->SetBranchAddress( "un1", &un1 );
-    theTree->SetBranchAddress( "un2", &un2 );
-    theTree->SetBranchAddress( "un3", &un3 );
-    theTree->SetBranchAddress( "un4", &un4 );
-    theTree->SetBranchAddress( "un5", &un5 );
-    theTree->SetBranchAddress( "un6", &un6 );
-    theTree->SetBranchAddress( "dn1", &dn1 );
-    theTree->SetBranchAddress( "dn2", &dn2 );
-    theTree->SetBranchAddress( "dn3", &dn3 );
-    theTree->SetBranchAddress( "dn4", &dn4 );
-    theTree->SetBranchAddress( "dn5", &dn5 );
-    theTree->SetBranchAddress( "dn6", &dn6 );
-    theTree->SetBranchAddress( "pnCells", &pnCells );
-    theTree->SetBranchAddress( "previousLayer", &previousLayer );
-    theTree->SetBranchAddress( "nextLayer", &nextLayer );
-    theTree->SetBranchAddress( "sameLayer", &sameLayer );
-    theTree->SetBranchAddress( "sum1", &sum1 );
-    theTree->SetBranchAddress( "sum2", &sum2 );
-    theTree->SetBranchAddress( "sum3", &sum3 );
-    theTree->SetBranchAddress( "sum4", &sum4 );
-    theTree->SetBranchAddress( "sum5", &sum5 );
-    theTree->SetBranchAddress( "sum6", &sum6 );
+    theTree->SetBranchAddress( "MLlayer", &layer );
+    theTree->SetBranchAddress( "MLn1", &n1 );
+    theTree->SetBranchAddress( "MLn2", &n2 );
+    theTree->SetBranchAddress( "MLn3", &n3 );
+    theTree->SetBranchAddress( "MLn4", &n4 );
+    theTree->SetBranchAddress( "MLn5", &n5 );
+    theTree->SetBranchAddress( "MLn6", &n6 );
+    theTree->SetBranchAddress( "MLnup", &nup );
+    theTree->SetBranchAddress( "MLndown", &ndown );
+    theTree->SetBranchAddress( "MLun1", &un1 );
+    theTree->SetBranchAddress( "MLun2", &un2 );
+    theTree->SetBranchAddress( "MLun3", &un3 );
+    theTree->SetBranchAddress( "MLun4", &un4 );
+    theTree->SetBranchAddress( "MLun5", &un5 );
+    theTree->SetBranchAddress( "MLun6", &un6 );
+    theTree->SetBranchAddress( "MLdn1", &dn1 );
+    theTree->SetBranchAddress( "MLdn2", &dn2 );
+    theTree->SetBranchAddress( "MLdn3", &dn3 );
+    theTree->SetBranchAddress( "MLdn4", &dn4 );
+    theTree->SetBranchAddress( "MLdn5", &dn5 );
+    theTree->SetBranchAddress( "MLdn6", &dn6 );
+    theTree->SetBranchAddress( "MLdead", &dead);
+    theTree->SetBranchAddress( "MLrechitsum", &rechitsum);
+    theTree->SetBranchAddress( "MLevent", &event);
 
+    TString foutname = "data/cmssw/RegressionResults/flatRegressionResult_"+energy_str+"GeV_d0"+deadfrac_str+"0_excludeDead2.root";
+    TFile *target  = new TFile( foutname,"RECREATE" );
+    TTree* t1 = new TTree("t1","sample");
+    Float_t val;
+    t1->Branch( "MLlayer", &layer, "MLlayer/F");
+    t1->Branch( "MLn1"   , &n1   , "MLn1/F"   );
+    t1->Branch( "MLn2"   , &n2   , "MLn2/F"   );
+    t1->Branch( "MLn3"   , &n3   , "MLn3/F"   );
+    t1->Branch( "MLn4"   , &n4   , "MLn4/F"   );
+    t1->Branch( "MLn5"   , &n5   , "MLn5/F"   );
+    t1->Branch( "MLn6"   , &n6   , "MLn6/F"   );
+    t1->Branch( "MLnup"  , &nup  , "MLnup/F"  );
+    t1->Branch( "MLndown", &ndown, "MLndown/F");
+    t1->Branch( "MLun1"  , &un1  , "MLun1/F"  );
+    t1->Branch( "MLun2"  , &un2  , "MLun2/F"  );
+    t1->Branch( "MLun3"  , &un3  , "MLun3/F"  );
+    t1->Branch( "MLun4"  , &un4  , "MLun4/F"  );
+    t1->Branch( "MLun5"  , &un5  , "MLun5/F"  );
+    t1->Branch( "MLun6"  , &un6  , "MLun6/F"  );
+    t1->Branch( "MLdn1"  , &dn1  , "MLdn1/F"  );
+    t1->Branch( "MLdn2"  , &dn2  , "MLdn2/F"  );
+    t1->Branch( "MLdn3"  , &dn3  , "MLdn3/F"  );
+    t1->Branch( "MLdn4"  , &dn4  , "MLdn4/F"  );
+    t1->Branch( "MLdn5"  , &dn5  , "MLdn5/F"  );
+    t1->Branch( "MLdn6"  , &dn6  , "MLdn6/F"  );
+    t1->Branch( "MLdead" , &dead , "MLdead/F" );
+    t1->Branch( "MLrechitsum", &rechitsum , "MLrechitsum/F");
+    t1->Branch( "MLevent", &event, "MLevent/F");
+    t1->Branch( "regression", &val, "regression/F");
 
     std::cout << "--- Processing: " << theTree->GetEntries() << " events" << std::endl;
     TStopwatch sw;
     sw.Start();
 
-    TH2F* hscatter = new TH2F("hscatter", "Regression vs true rechit;Rechit_{true} [GeV];Rechit_{ML} [GeV]", 100, 0, 0.4, 100, 0, 0.4);
-    TH2F* hscatter2 = new TH2F("hscatter2", "ML bias;Rechit_{true} [GeV]; Rechit_{true}-Rechit_{ML} [GeV]", 100, 0, 0.4, 100, -3, 1);
-    TH2F* hscatter3 = new TH2F("hscatter3", "Averege bias;Rechit_{true} [GeV]; Rechit_{true}-Rechit_{ML} [GeV]", 100, 0, 0.4, 100, -9, 1);
-    TH2F* hscatter2r = new TH2F("hscatter2r", "ML bias vs Rechit_{ML};Rechit_{ML} [GeV]; Rechit_{true}-Rechit_{ML} [GeV]", 200, 0, 0.4, 200, -0.6, 0.6);
-    TH2F* hscatter3r = new TH2F("hscatter3r", "Average bias vs Rechit_{av};Rechit_{av} [GeV]; Rechit_{true}-Rechit_{av} [GeV]", 200, 0, 0.4, 200, -0.6, 0.6);
+    TString s_dead_nocorr = deadfrac_str+"% dead";
+    TString s_dead_mlcorr = deadfrac_str+"% dead + ML correction";
+    TString s_dead_avcorr = deadfrac_str+"% dead + average correction";
+
+    TH1F* h_dead_nocorr = new TH1F("h_dead_nocorr",s_dead_nocorr,1000,0.15*energy,1.5*energy);
+    TH1F* h_dead_mlcorr = new TH1F("h_dead_mlcorr",s_dead_mlcorr,1000,0.15*energy,1.5*energy);
+    TH1F* h_dead_avcorr = new TH1F("h_dead_avcorr",s_dead_avcorr,1000,0.15*energy,1.5*energy);
+    TH1F* h_nodead = new TH1F("h_nodead","0% dead",1000,0.15*energy,1.5*energy);
+    TH2F* hscatter2 = new TH2F("hscatter2", "ML bias;recHit_{true} [GeV]; recHit_{ML}-recHit_{true} [GeV]", 100, 0, 40, 100, -30, 20);
+    TH2F* hscatter3 = new TH2F("hscatter3", "Averege bias;recHit_{true} [GeV]; recHit_{ML}-recHit_{true} [GeV]", 100, 0, 40, 100, -30, 20);
+    TH2F* hscatter2r = new TH2F("hscatter2r", "ML bias vs recHit_{ML};recHit_{ML} [GeV]; recHit_{ML}-recHit_{true} [GeV]", 200, 0, 40, 200, -30, 20);
+    TH2F* hscatter3r = new TH2F("hscatter3r", "Average bias vs recHit_{av};recHit_{av} [GeV]; recHit_{av}-recHit_{true} [GeV]", 200, 0, 40, 200, -30, 20);
+    TH2F* hvslayer = new TH2F("hvslayer", "ML regression vs layer",28,0,28,100, -30, 20);
 
     float avdevquad = 0;
     int n = 0;
+    int tempEv = 0;
+    Float_t tempRechitsum = 0;
+    Float_t tempRechitsum0 = 0;
+    Float_t tempRechitsum1 = 0;
+    Float_t tempRechitsum2 = 0;
     for (Long64_t ievt=0; ievt<theTree->GetEntries();ievt++) {
-
         if (ievt%50000 == 0) {
             std::cout << "--- ... Processing event: " << ievt << std::endl;
         }
 
         theTree->GetEntry(ievt);
 
+        if (ievt == 0) {
+            tempRechitsum = rechitsum;
+            tempRechitsum0 = rechitsum;
+            tempRechitsum1 = rechitsum;
+            tempRechitsum2 = rechitsum;
+        }
+
         // Retrieve the MVA target values (regression outputs) and fill into histograms
         // NOTE: EvaluateRegression(..) returns a vector for multi-target regression
-
         for (Int_t ih=0; ih<nhists; ih++) {
-            if(dead < 0.4){
-                TString title = hists[ih]->GetTitle();
-                Float_t val = (reader->EvaluateRegression( title ))[0];
-                Float_t avrechit = nup/2+ndown/2;
-                hists[ih]->Fill(val);
-                hscatter->Fill(dead,val);
+            TString title = hists[ih]->GetTitle();
+            if (layer > -1) {
+                val = (reader->EvaluateRegression( title ))[0];
                 avdevquad += pow(dead-val,2);
                 n++;
-                hscatter2->Fill(dead,(dead-val));
-                hscatter3->Fill(dead,(dead-avrechit));
-                hscatter2r->Fill(val,(dead-val));
-                hscatter3r->Fill(avrechit,(dead-avrechit));
+            }else {
+                val = 0;
             }
+            Float_t avrechit = (nup/2+ndown/2);
+            hists[ih]->Fill(val);
+            hscatter2->Fill(dead,(val-dead));
+            hscatter3->Fill(dead,(avrechit-dead));
+            hscatter2r->Fill(val,(val-dead));
+            hscatter3r->Fill(avrechit,(avrechit-dead));
+            hvslayer->Fill(layer,avrechit-dead);
+            if(tempEv == event) {
+                tempRechitsum+=val;
+                tempRechitsum1+=dead;
+                tempRechitsum2+=avrechit;
+            }else{
+                h_dead_nocorr->Fill(tempRechitsum0);
+                h_dead_mlcorr->Fill(tempRechitsum);
+                h_dead_avcorr->Fill(tempRechitsum2);
+                h_nodead->Fill(tempRechitsum1);
+                tempRechitsum = rechitsum;
+                tempRechitsum0 = rechitsum;
+                tempRechitsum1 = rechitsum;
+                tempRechitsum2 = rechitsum;
+                tempEv = event;
+            }
+            t1->Fill();
         }
     }
     sw.Stop();
@@ -259,9 +263,6 @@ void TMVARegressionApplication( TString myMethodList = "" )
 
     // --- Write histograms
     gStyle->SetOptStat(0);
-    TCanvas* c1 = new TCanvas("c1","c1",1);
-    c1->SetLogz();
-    hscatter->Draw("colz");
     TCanvas* c2 = new TCanvas("c2","c2",1);
     c2->SetLogz();
     hscatter2->Draw("colz");
@@ -273,18 +274,21 @@ void TMVARegressionApplication( TString myMethodList = "" )
     l->Draw();
     ltx.SetTextSize(0.035);
     ltx.DrawLatex(0.003,hscatter2->GetYaxis()->GetXmax()*1.05,
-    "HGCAL#scale[0.8]{#font[12]{Internal}}");
+    "HGCAL#scale[0.8]{#font[12]{Simulation work in progress}}");
 
-
-    TFile *target  = new TFile( "TMVARegApp.root","RECREATE" );
     for (Int_t ih=0; ih<nhists; ih++) hists[ih]->Write();
-    hscatter->Write();
     hscatter2->Write();
     hscatter3->Write();
     hscatter2r->Write();
     hscatter3r->Write();
     pf1->Write();
     pf2->Write();
+    h_dead_nocorr->Write();
+    h_dead_mlcorr->Write();
+    h_dead_avcorr->Write();
+    h_nodead->Write();
+    hvslayer->Write();
+    t1->Write();
     target->Close();
 
     std::cout << "--- Created root file: \"" << target->GetName()
@@ -293,18 +297,4 @@ void TMVARegressionApplication( TString myMethodList = "" )
     delete reader;
 
     std::cout << "==> TMVARegressionApplication is done!" << std::endl << std::endl;
-}
-
-int main( int argc, char** argv )
-{
-    // Select methods (don't look at this code - not of interest)
-    TString methodList;
-    for (int i=1; i<argc; i++) {
-        TString regMethod(argv[i]);
-        if(regMethod=="-b" || regMethod=="--batch") continue;
-        if (!methodList.IsNull()) methodList += TString(",");
-        methodList += regMethod;
-    }
-    TMVARegressionApplication(methodList);
-    return 0;
 }
