@@ -71,7 +71,7 @@ std::vector<double> rechitSum(int En, int df, int range, int bins = 100,
       rechitsum_MLregr = rechitsum;
     }
     if(event_tmp != event) {
-      if (!df) {
+      if (df) {
         if (method == "none") {
           h1->Fill(rechitsum);
         }

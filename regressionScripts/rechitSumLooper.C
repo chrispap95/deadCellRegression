@@ -108,7 +108,7 @@ void rechitSumLooper(int df, TString method = "none", bool printCanvases = 1){
   gr->Fit("f2");
   gr->Draw("AP");
 
-  TString outname = "outputFiles/out0"+(TString)to_string(df)+"_"+method+"r.root";
+  TString outname = "outputFiles/out0"+(TString)to_string(df)+"_"+method+".root";
   TFile* out = new TFile(outname,"RECREATE");
   gr->Write();
   out->Close();
