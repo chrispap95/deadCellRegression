@@ -52,6 +52,28 @@ std::vector<double> rechitSum(int En, int df, int range, int bins = 100,
   for(int i = 0; i <= n; ++i){
     t1->GetEntry(i);
 
+    // Assign 0 rechit to dead neighbors
+    if (nup < 0) nup = 0;
+    if (ndown < 0) ndown = 0;
+    if (n1 < 0) n1 = 0;
+    if (n2 < 0) n2 = 0;
+    if (n3 < 0) n3 = 0;
+    if (n4 < 0) n4 = 0;
+    if (n5 < 0) n5 = 0;
+    if (n6 < 0) n6 = 0;
+    if (un1 < 0) un1 = 0;
+    if (un2 < 0) un2 = 0;
+    if (un3 < 0) un3 = 0;
+    if (un4 < 0) un4 = 0;
+    if (un5 < 0) un5 = 0;
+    if (un6 < 0) un6 = 0;
+    if (dn1 < 0) dn1 = 0;
+    if (dn2 < 0) dn2 = 0;
+    if (dn3 < 0) dn3 = 0;
+    if (dn4 < 0) dn4 = 0;
+    if (dn5 < 0) dn5 = 0;
+    if (dn6 < 0) dn6 = 0;
+
     // Calculate for LS average
     Float_t layer_up = un1 + un2 + un3 + un4 + un5 + un6 + nup;
     Float_t layer_dn = dn1 + dn2 + dn3 + dn4 + dn5 + dn6 + ndown;
