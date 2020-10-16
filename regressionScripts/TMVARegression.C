@@ -131,7 +131,7 @@ void TMVARegression( TString fname, TString uniqueID = "testRun", TString nTrain
 
    // Register the regression tree
 
-   TTree *regTree = (TTree*)input->Get("t1");
+   TTree *regTree = (TTree*)input->Get("tree");
 
    // global event weights per tree (see below for setting event-wise weights)
    Double_t regWeight  = 1.0;
@@ -175,9 +175,9 @@ void TMVARegression( TString fname, TString uniqueID = "testRun", TString nTrain
    if (Use["DNN_CPU"]) {
       TString layoutString("Layout=TANH|22");
       for (int i = 0; i < Nlayers; ++i) {
-        layoutString += ",Layout=TANH|"+nodes
+        layoutString += ",Layout=TANH|"+nodes;
       }
-      layoutString += ",LINEAR"
+      layoutString += ",LINEAR";
       TString training0("LearningRate=1e-2,Momentum=0.5,Repetitions=1,ConvergenceSteps=20,BatchSize=200,"
                         "TestRepetitions=10,WeightDecay=0.01,Regularization=NONE,DropConfig=0.2+0.2+0.2+0.,"
                         "DropRepetitions=2");

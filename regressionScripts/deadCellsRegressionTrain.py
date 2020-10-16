@@ -12,19 +12,19 @@ def rmse(y_true, y_pred):
 def me(y_true, y_pred):
 	return backend.mean((y_pred - y_true), axis=-1)
 
-treename = 't1'
+treename = 'tree'
 filename = {}
 upfile = {}
 params = {}
 df = {}
 
-filename['file1'] = 'input'
+filename['file1'] = 'cmssw_flatTrainingSample.root'
 outtag = 'ouput_tag'
 VARS = ['layer','n1','n2','n3','n4','n5','n6',
         'un1','un2','un3','un4','un5','un6',
         'dn1','dn2','dn3','dn4','dn5','dn6',
         'nup','ndown']
-TARGET = ['rechit']
+TARGET = ['dead']
 
 upfile['file1'] = uproot.open(filename['file1'])
 params['input'] = upfile['file1'][treename].arrays(VARS)
@@ -128,7 +128,7 @@ def write_prediction_to_file(features, scaler, model, filename='',treename='',br
                         ('dn4',numpy.float32),('dn5',numpy.float32),('dn6',numpy.float32),
                         ('nup',numpy.float32),('ndown',numpy.float32),
                         ('event',numpy.float32),('rechitsum',numpy.float32),
-                        ('rechit',numpy.float32),('rechit_dnn', numpy.float32)])
+                        ('dead',numpy.float32),('rechit_dnn', numpy.float32)])
 
     data_out = numpy.core.records.fromarrays(data_out.transpose(), dtype=dtype) # structured numpy array
     root_numpy.array2root(data_out, filename, treename=treename, mode='recreate')
@@ -140,7 +140,7 @@ OUT_VARS = ['layer',
             'nup','ndown',
             'event',
             'rechitsum',
-            'rechit']
+            'dead']
 
 X_all = get_features_from_file(filename['file1'],
                                treename=treename,

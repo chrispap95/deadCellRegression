@@ -1,11 +1,11 @@
 universe = vanilla
 Executable = condor-exec.csh
-Arguments = 3 40 1000000 200000
+Arguments = 3 40 1000000 200000 CMSSW_10_6_3_patch1
 Should_Transfer_Files = YES
 WhenToTransferOutput = ON_EXIT
 request_cpus = 4
-request_memory = 2500
-Transfer_Input_Files = condor-exec.csh, CMSSW_11_2_0_pre2.tgz
+request_memory = 8000
+Transfer_Input_Files = condor-exec.csh, CMSSW_10_6_3_patch1.tgz
 Output = logs/tmva_$(Cluster)_$(Process).stdout
 Error = logs/tmva_$(Cluster)_$(Process).stderr
 Log = logs/tmva_$(Cluster)_$(Process).log
