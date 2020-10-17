@@ -6,7 +6,7 @@
 
 void treeConverter(TString input, bool isTraining){
     TFile* f = TFile::Open(input+".root");
-    TTree* t1 = dynamic_cast< TTree* >(f->Get("t1"));
+    TTree* t = dynamic_cast< TTree* >(f->Get("t1"));
     Float_t n1, n2, n3, n4, n5, n6, nup, ndown, dead, layer, pnCells, rechitsum;
     Float_t un1, un2, un3, un4, un5, un6;
     Float_t dn1, dn2, dn3, dn4, dn5, dn6;
@@ -60,7 +60,7 @@ void treeConverter(TString input, bool isTraining){
     tree->Branch("rechitsum",&rechitsum,"rechitsum/F");
 
     for (int i = 0; i < t->GetEntries(); ++i) {
-        t1->GetEntry(i);
+        t->GetEntry(i);
         if (!isTraining) tree->Fill();
         else if (isTraining && layer > 0) tree->Fill();
     }
