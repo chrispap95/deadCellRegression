@@ -37,6 +37,7 @@ void treeConverter(TString input, bool isTraining){
 
     TFile* fout = new TFile(input+"_converted.root","RECREATE");
     TTree* tree = new TTree("tree","sample");
+    tree->Branch("layer",&layer,"layer/F");
     tree->Branch("n1",&n1,"n1/F");
     tree->Branch("n2",&n2,"n2/F");
     tree->Branch("n3",&n3,"n3/F");
