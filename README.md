@@ -1,7 +1,6 @@
 # deadCellRegression
-
 Repository for ML study on dead Si cells rechit regression.
-For use with ROOT > 6.10.04 (CMSSW_9_3_2)
+For use with ROOT >= 6.20.00 (CMSSW_11_1_0)
 
 ## Initial setup
 
@@ -24,7 +23,7 @@ cd deadCellRegression/regressionScripts
 
 Train the algorithm
 ```bash
-root -l TMVARegression.C\(\"someSample.root\",\"testRun\",\"10000\",\"2500\"\)
+root -l TMVARegression.C\(\"someSample.root\",\"testRun\",10000\)
 ```
 
 to use the result
@@ -36,7 +35,7 @@ root -l TMVARegressionApplication.C\(100,1\)
 
 To get an idea of what the inputs are:
 ```bash
-root -l TMVARegression.C\(\"inputFile.root\",\"uniqueIDstring\",\"nTrain\",\"nTest\",nHiddenLayers,\"nodesPerLayer\"\)
+root -l TMVARegression.C\(\"inputFile.root\",\"uniqueIDstring\",nSamples,nHiddenLayers,\"nodesPerLayer\"\)
 root -l TMVARegressionApplication.C\(energy,deadFraction\)
 ```
 

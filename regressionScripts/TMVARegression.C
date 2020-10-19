@@ -16,10 +16,10 @@
 
 using namespace TMVA;
 
-void TMVARegression( TString fname, TString uniqueID = "testRun", TString nTrain = "1000",
-                              TString nTest = "200",int Nlayers = 3,TString nodes = "20")
+void TMVARegression( TString fname, TString uniqueID = "testRun", int Nsamples = 1000,
+                     int Nlayers = 3, TString nodes = "20")
 {
-   //---------------------------------------------------------------
+   ROOT::EnableImplicitMT();
    // This loads the library
    TMVA::Tools::Instance();
 
@@ -28,19 +28,8 @@ void TMVARegression( TString fname, TString uniqueID = "testRun", TString nTrain
    // Default MVA methods to be trained + tested
    std::map<std::string,int> Use;
 
-#ifdef R__HAS_TMVACPU
-   Use["DNN_CPU"] = 1;
-#else
-   Use["DNN_CPU"] = 0;
-#endif
-   // ---------------------------------------------------------------
-
    std::cout << std::endl;
    std::cout << "==> Start TMVARegression" << std::endl;
-
-   // --------------------------------------------------------------------------------------------------
-
-   // Here the preparation phase begins
 
    // Create a new root output file
    TString outfileName( uniqueid+".root" );
@@ -61,7 +50,6 @@ void TMVARegression( TString fname, TString uniqueID = "testRun", TString nTrain
 
    TMVA::Factory *factory = new TMVA::Factory( uniqueid, outputFile,
                                                "!V:!Silent:Color:DrawProgressBar:AnalysisType=Regression" );
-
 
    TMVA::DataLoader *dataloader=new TMVA::DataLoader("dataset");
    /*
@@ -150,12 +138,14 @@ void TMVARegression( TString fname, TString uniqueID = "testRun", TString nTrain
    TCut mycut = "";
    // for example: TCut mycut = "abs(var1)<0.5 && abs(var2-0.5)<1";
 
+   // split to training and testing samples
+   int nTrain = 0.8*Nsamples;
+   int nTest = 0.2*Nsamples;
+
    // tell the DataLoader to use all remaining events in the trees after training for testing:
-   dataloader->PrepareTrainingAndTestTree(mycut,
-                                         "nTrain_Regression="+nTrain+":nTest_Regression="+nTest+":SplitMode=Random:NormMode=NumEvents:!V" );
-   //
-   //     dataloader->PrepareTrainingAndTestTree( mycut,
-   //            "nTrain_Regression=0:nTest_Regression=0:SplitMode=Random:NormMode=NumEvents:!V" );
+   dataloader->PrepareTrainingAndTestTree(mycut,"nTrain_Regression="+to_string(nTrain)+
+                                                ":nTest_Regression="+to_string(nTest)+
+                                                ":SplitMode=Random:NormMode=NumEvents:!V");
 
    /*
    If no numbers of events are given, half of the events in the tree are used
@@ -172,45 +162,25 @@ void TMVARegression( TString fname, TString uniqueID = "testRun", TString nTrain
    */
 
 
-   if (Use["DNN_CPU"]) {
-      TString layoutString("Layout=TANH|22");
-      for (int i = 0; i < Nlayers; ++i) {
-        layoutString += ",Layout=TANH|"+nodes;
-      }
-      layoutString += ",LINEAR";
-      TString training0("LearningRate=1e-2,Momentum=0.5,Repetitions=1,ConvergenceSteps=20,BatchSize=200,"
-                        "TestRepetitions=10,WeightDecay=0.01,Regularization=NONE,DropConfig=0.2+0.2+0.2+0.,"
-                        "DropRepetitions=2");
-      TString training1("LearningRate=1e-3,Momentum=0.7,Repetitions=1,ConvergenceSteps=20,BatchSize=200,"
-                        "TestRepetitions=5,WeightDecay=0.01,Regularization=L2,DropConfig=0.1+0.1+0.1,DropRepetitions="
-                        "1");
-      TString training2("LearningRate=1e-4,Momentum=0.3,Repetitions=1,ConvergenceSteps=20,BatchSize=200,"
-                        "TestRepetitions=5,WeightDecay=0.01,Regularization=NONE");
-      TString training3("LearningRate=1e-4,Momentum=0.1,Repetitions=1,ConvergenceSteps=20,BatchSize=200,"
-                        "TestRepetitions=5,WeightDecay=0.01,Regularization=NONE");
+    TString layoutString("Layout=TANH|22");
+    for (int i = 0; i < Nlayers; ++i) {
+      layoutString += ",TANH|"+nodes;
+    }
+    layoutString += ",LINEAR";
 
+    TString trainingStrategyString("TrainingStrategy=LearningRate=1e-3,Momentum=0.3,"
+                                   "ConvergenceSteps=20,BatchSize=50,TestRepetitions=1,"
+                                   "WeightDecay=0.0,Regularization=None,Optimizer=Adam");
 
-      TString trainingStrategyString("TrainingStrategy=");
-      trainingStrategyString += training0 + "|" + training1 + "|" + training2 + "|" + training3;
+    TString nnOptions("!H:V:ErrorStrategy=SUMOFSQUARES:VarTransform=G:WeightInitialization=XAVIERUNIFORM:Architecture=CPU");
+    nnOptions.Append(":");
+    nnOptions.Append(layoutString);
+    nnOptions.Append(":");
+    nnOptions.Append(trainingStrategyString);
 
-      //       TString trainingStrategyString
-      //       ("TrainingStrategy=LearningRate=1e-1,Momentum=0.3,Repetitions=3,ConvergenceSteps=20,BatchSize=30,TestRepetitions=7,WeightDecay=0.0,L1=false,DropFraction=0.0,DropRepetitions=5");
-
-      TString nnOptions(
-         "!H:V:ErrorStrategy=SUMOFSQUARES:VarTransform=G:WeightInitialization=XAVIERUNIFORM:Architecture=CPU");
-      //       TString nnOptions ("!H:V:VarTransform=Normalize:ErrorStrategy=CHECKGRADIENTS");
-      nnOptions.Append(":");
-      nnOptions.Append(layoutString);
-      nnOptions.Append(":");
-      nnOptions.Append(trainingStrategyString);
-
-      factory->BookMethod(dataloader, TMVA::Types::kDNN, "DNN_CPU", nnOptions); // NN
-   }
-
-   // --------------------------------------------------------------------------------------------------
+    factory->BookMethod(dataloader, TMVA::Types::kDL, "DNN_CPU", nnOptions);
 
    // Now you can tell the factory to train, test, and evaluate the MVAs
-
    // Train MVAs using the set of training events
    factory->TrainAllMethods();
 
@@ -219,8 +189,6 @@ void TMVARegression( TString fname, TString uniqueID = "testRun", TString nTrain
 
    // Evaluate and compare performance of all configured MVAs
    factory->EvaluateAllMethods();
-
-   // --------------------------------------------------------------
 
    // Save the output
    outputFile->Close();
