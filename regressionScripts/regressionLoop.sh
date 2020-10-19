@@ -7,6 +7,6 @@ for e in energies
 do
 for df in deadFractions
 do
-root -b -q -l TMVARegressionApplication.C\(e,df\)
+root -b -q -l TMVARegressionApplication.C\(${e},${df}\)
 done
 done
