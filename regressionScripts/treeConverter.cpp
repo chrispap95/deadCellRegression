@@ -59,6 +59,7 @@ void treeConverter(TString input, bool isTraining){
     tree->Branch("nup",&nup,"nup/F");
     tree->Branch("ndown",&ndown,"ndown/F");
     tree->Branch("rechitsum",&rechitsum,"rechitsum/F");
+    tree->Branch("dead",&dead,"dead/F");
 
     for (int i = 0; i < t->GetEntries(); ++i) {
         t->GetEntry(i);
