@@ -30,7 +30,7 @@
 
 using namespace TMVA;
 
-void TMVARegressionApplication_dnn(int energy, int deadfrac) {
+void TMVARegressionApplication(int energy, int deadfrac) {
     //---------------------------------------------------------------
     // This loads the library
     TMVA::Tools::Instance();
