@@ -19,152 +19,141 @@ using namespace TMVA;
 void TMVARegression( TString fname, TString uniqueID = "testRun", int Nsamples = 1000,
                      int Nlayers = 3, TString nodes = "20")
 {
-   ROOT::EnableImplicitMT();
-   // This loads the library
-   TMVA::Tools::Instance();
+    ROOT::EnableImplicitMT();
+    // This loads the library
+    TMVA::Tools::Instance();
 
-   TString uniqueid = uniqueID;
+    TString uniqueid = uniqueID;
 
-   // Default MVA methods to be trained + tested
-   std::map<std::string,int> Use;
+    std::cout << std::endl;
+    std::cout << "==> Start TMVARegression" << std::endl;
 
-   std::cout << std::endl;
-   std::cout << "==> Start TMVARegression" << std::endl;
+    // Create a new root output file
+    TString outfileName( uniqueid+".root" );
+    TFile* outputFile = TFile::Open( outfileName, "RECREATE" );
 
-   // Create a new root output file
-   TString outfileName( uniqueid+".root" );
-   TFile* outputFile = TFile::Open( outfileName, "RECREATE" );
+    /*
+    Create the factory object. Later you can choose the methods
+    whose performance you'd like to investigate. The factory will
+    then run the performance analysis for you.
+    The first argument is the base of the name of all the
+    weightfiles in the directory weight/
+    The second argument is the output file for the training results
+    All TMVA output can be suppressed by removing the "!" (not) in
+    front of the "Silent" argument in the option string
+    */
 
-   /*
-   Create the factory object. Later you can choose the methods
-   whose performance you'd like to investigate. The factory will
-   then run the performance analysis for you.
-
-   The first argument is the base of the name of all the
-   weightfiles in the directory weight/
-
-   The second argument is the output file for the training results
-   All TMVA output can be suppressed by removing the "!" (not) in
-   front of the "Silent" argument in the option string
-   */
-
-   TMVA::Factory *factory = new TMVA::Factory( uniqueid, outputFile,
+    TMVA::Factory *factory = new TMVA::Factory( uniqueid, outputFile,
                                                "!V:!Silent:Color:DrawProgressBar:AnalysisType=Regression" );
 
-   TMVA::DataLoader *dataloader=new TMVA::DataLoader("dataset");
-   /*
-   If you wish to modify default settings
-   (please check "src/Config.h" to see all available global options)
-   */
+    TMVA::DataLoader *dataloader=new TMVA::DataLoader("dataset");
+    /*
+    If you wish to modify default settings
+    (please check "src/Config.h" to see all available global options)
+    */
 
-   //     (TMVA::gConfig().GetVariablePlotting()).fTimesRMS = 8.0;
-   //     (TMVA::gConfig().GetIONames()).fWeightFileDir = "myWeightDirectory";
+    //     (TMVA::gConfig().GetVariablePlotting()).fTimesRMS = 8.0;
+    //     (TMVA::gConfig().GetIONames()).fWeightFileDir = "myWeightDirectory";
 
-   /*
-   Define the input variables that shall be used for the MVA training
-   note that you may also use variable expressions, such as: "3*var1/var2*abs(var3)"
-   [all types of expressions that can also be parsed by TTree::Draw( "expression" )]
-   */
-   dataloader->AddVariable( "layer", "layer", "units", 'F' );
-   dataloader->AddVariable( "n1", "neighbor 1", "units", 'F' );
-   dataloader->AddVariable( "n2", "neighbor 2", "units", 'F' );
-   dataloader->AddVariable( "n3", "neighbor 3", "units", 'F' );
-   dataloader->AddVariable( "n4", "neighbor 4", "units", 'F' );
-   dataloader->AddVariable( "n5", "neighbor 5", "units", 'F' );
-   dataloader->AddVariable( "n6", "neighbor 6", "units", 'F' );
-   dataloader->AddVariable( "nup", "neighbor up", "units", 'F' );
-   dataloader->AddVariable( "ndown", "neighbor down", "units", 'F' );
-   dataloader->AddVariable( "un1", "up 1", "units", 'F' );
-   dataloader->AddVariable( "un2", "up 2", "units", 'F' );
-   dataloader->AddVariable( "un3", "up 3", "units", 'F' );
-   dataloader->AddVariable( "un4", "up 4", "units", 'F' );
-   dataloader->AddVariable( "un5", "up 5", "units", 'F' );
-   dataloader->AddVariable( "un6", "up 6", "units", 'F' );
-   dataloader->AddVariable( "dn1", "down 1", "units", 'F' );
-   dataloader->AddVariable( "dn2", "down 2", "units", 'F' );
-   dataloader->AddVariable( "dn3", "down 3", "units", 'F' );
-   dataloader->AddVariable( "dn4", "down 4", "units", 'F' );
-   dataloader->AddVariable( "dn5", "down 5", "units", 'F' );
-   dataloader->AddVariable( "dn6", "down 6", "units", 'F' );
+    /*
+    Define the input variables that shall be used for the MVA training
+    note that you may also use variable expressions, such as: "3*var1/var2*abs(var3)"
+    [all types of expressions that can also be parsed by TTree::Draw( "expression" )]
+    */
+    dataloader->AddVariable( "layer", "layer", "units", 'F' );
+    dataloader->AddVariable( "n1", "neighbor 1", "units", 'F' );
+    dataloader->AddVariable( "n2", "neighbor 2", "units", 'F' );
+    dataloader->AddVariable( "n3", "neighbor 3", "units", 'F' );
+    dataloader->AddVariable( "n4", "neighbor 4", "units", 'F' );
+    dataloader->AddVariable( "n5", "neighbor 5", "units", 'F' );
+    dataloader->AddVariable( "n6", "neighbor 6", "units", 'F' );
+    dataloader->AddVariable( "nup", "neighbor up", "units", 'F' );
+    dataloader->AddVariable( "ndown", "neighbor down", "units", 'F' );
+    dataloader->AddVariable( "un1", "up 1", "units", 'F' );
+    dataloader->AddVariable( "un2", "up 2", "units", 'F' );
+    dataloader->AddVariable( "un3", "up 3", "units", 'F' );
+    dataloader->AddVariable( "un4", "up 4", "units", 'F' );
+    dataloader->AddVariable( "un5", "up 5", "units", 'F' );
+    dataloader->AddVariable( "un6", "up 6", "units", 'F' );
+    dataloader->AddVariable( "dn1", "down 1", "units", 'F' );
+    dataloader->AddVariable( "dn2", "down 2", "units", 'F' );
+    dataloader->AddVariable( "dn3", "down 3", "units", 'F' );
+    dataloader->AddVariable( "dn4", "down 4", "units", 'F' );
+    dataloader->AddVariable( "dn5", "down 5", "units", 'F' );
+    dataloader->AddVariable( "dn6", "down 6", "units", 'F' );
 
-   /*
-   You can add so-called "Spectator variables", which are not used in the MVA training,
-   but will appear in the final "TestTree" produced by TMVA. This TestTree will contain the
-   input variables, the response values of all trained MVAs, and the spectator variables
-   */
-   //dataloader->AddSpectator( "spec1:=rechitsum",  "Spectator 1", "units", 'F' );
-   //dataloader->AddSpectator( "spec2:=var1*3",  "Spectator 2", "units", 'F' );
+    /*
+    You can add so-called "Spectator variables", which are not used in the MVA training,
+    but will appear in the final "TestTree" produced by TMVA. This TestTree will contain the
+    input variables, the response values of all trained MVAs, and the spectator variables
+    */
+    //dataloader->AddSpectator( "spec1:=rechitsum",  "Spectator 1", "units", 'F' );
+    //dataloader->AddSpectator( "spec2:=var1*3",  "Spectator 2", "units", 'F' );
 
+    // Add the variable carrying the regression target
+    dataloader->AddTarget( "dead" );
 
-   // Add the variable carrying the regression target
-   dataloader->AddTarget( "dead" );
+    /*It is also possible to declare additional targets for multi-dimensional regression, ie:
+         factory->AddTarget( "fvalue2" );
+    BUT: this is currently ONLY implemented for MLP
+    Read training and test data (see TMVAClassification for reading ASCII files)
+    */
 
-   /*It is also possible to declare additional targets for multi-dimensional regression, ie:
-        factory->AddTarget( "fvalue2" );
-   BUT: this is currently ONLY implemented for MLP
+    //load the signal and background event samples from ROOT trees
+    TFile *input(0);
+    if (!gSystem->AccessPathName( fname )) {
+        input = TFile::Open( fname ); // check if file in local directory exists
+    }
+    if (!input) {
+        std::cout << "ERROR: could not open data file" << std::endl;
+        exit(1);
+    }
+    std::cout << "--- TMVARegression           : Using input file: " << input->GetName() << std::endl;
 
-   Read training and test data (see TMVAClassification for reading ASCII files)
-   */
+    // Register the regression tree
 
-   //load the signal and background event samples from ROOT trees
-   TFile *input(0);
-   if (!gSystem->AccessPathName( fname )) {
-      input = TFile::Open( fname ); // check if file in local directory exists
-   }
-   if (!input) {
-      std::cout << "ERROR: could not open data file" << std::endl;
-      exit(1);
-   }
-   std::cout << "--- TMVARegression           : Using input file: " << input->GetName() << std::endl;
+    TTree *regTree = (TTree*)input->Get("tree");
 
-   // Register the regression tree
+    // global event weights per tree (see below for setting event-wise weights)
+    Double_t regWeight  = 1.0;
 
-   TTree *regTree = (TTree*)input->Get("tree");
+    // You can add an arbitrary number of regression trees
+    dataloader->AddRegressionTree( regTree, regWeight );
+    //dataloader->SetWeightExpression("MLdead","Regression");
 
-   // global event weights per tree (see below for setting event-wise weights)
-   Double_t regWeight  = 1.0;
+    /*
+    This would set individual event weights (the variables defined in the
+    expression need to exist in the original TTree)
+    */
+    //dataloader->SetWeightExpression( "var1", "Regression" );
 
-   // You can add an arbitrary number of regression trees
-   dataloader->AddRegressionTree( regTree, regWeight );
-   //dataloader->SetWeightExpression("MLdead","Regression");
+    // Apply additional cuts on the signal and background samples (can be different)
+    TCut mycut = "";
+    // for example: TCut mycut = "abs(var1)<0.5 && abs(var2-0.5)<1";
 
-   /*
-   This would set individual event weights (the variables defined in the
-   expression need to exist in the original TTree)
-   */
-   //dataloader->SetWeightExpression( "var1", "Regression" );
+    // split to training and testing samples
+    int nTrain = 0.8*Nsamples;
+    int nTest = 0.2*Nsamples;
 
-   // Apply additional cuts on the signal and background samples (can be different)
-   TCut mycut = "";
-   // for example: TCut mycut = "abs(var1)<0.5 && abs(var2-0.5)<1";
+    // tell the DataLoader to use all remaining events in the trees after training for testing:
+    dataloader->PrepareTrainingAndTestTree(mycut,"nTrain_Regression="+to_string(nTrain)+
+                                                 ":nTest_Regression="+to_string(nTest)+
+                                                 ":SplitMode=Random:NormMode=NumEvents:!V");
 
-   // split to training and testing samples
-   int nTrain = 0.8*Nsamples;
-   int nTest = 0.2*Nsamples;
-
-   // tell the DataLoader to use all remaining events in the trees after training for testing:
-   dataloader->PrepareTrainingAndTestTree(mycut,"nTrain_Regression="+to_string(nTrain)+
-                                                ":nTest_Regression="+to_string(nTest)+
-                                                ":SplitMode=Random:NormMode=NumEvents:!V");
-
-   /*
-   If no numbers of events are given, half of the events in the tree are used
-   for training, and the other half for testing:
-
-        dataloader->PrepareTrainingAndTestTree( mycut, "SplitMode=random:!V" );
-
-   Book MVA methods
-
-   Please lookup the various method configuration options in the corresponding cxx files, eg:
-   src/MethoCuts.cxx, etc, or here: http://tmva.sourceforge.net/optionRef.
-   it is possible to preset ranges in the option string in which the cut optimisation should be done:
-   "...:CutRangeMin[2]=-1:CutRangeMax[2]=1"...", where [2] is the third input
-   */
-
+    /*
+    If no numbers of events are given, half of the events in the tree are used
+    for training, and the other half for testing:
+         dataloader->PrepareTrainingAndTestTree( mycut, "SplitMode=random:!V" );
+    Book MVA methods
+    Please lookup the various method configuration options in the corresponding cxx files, eg:
+    src/MethoCuts.cxx, etc, or here: http://tmva.sourceforge.net/optionRef.
+    it is possible to preset ranges in the option string in which the cut optimisation should be done:
+    "...:CutRangeMin[2]=-1:CutRangeMax[2]=1"...", where [2] is the third input
+    */
 
     TString layoutString("Layout=TANH|22");
     for (int i = 0; i < Nlayers; ++i) {
-      layoutString += ",TANH|"+nodes;
+        layoutString += ",TANH|"+nodes;
     }
     layoutString += ",LINEAR";
 
@@ -180,26 +169,26 @@ void TMVARegression( TString fname, TString uniqueID = "testRun", int Nsamples =
 
     factory->BookMethod(dataloader, TMVA::Types::kDL, "DNN_CPU", nnOptions);
 
-   // Now you can tell the factory to train, test, and evaluate the MVAs
-   // Train MVAs using the set of training events
-   factory->TrainAllMethods();
+    // Now you can tell the factory to train, test, and evaluate the MVAs
+    // Train MVAs using the set of training events
+    factory->TrainAllMethods();
 
-   // Evaluate all MVAs using the set of test events
-   factory->TestAllMethods();
+    // Evaluate all MVAs using the set of test events
+    factory->TestAllMethods();
 
-   // Evaluate and compare performance of all configured MVAs
-   factory->EvaluateAllMethods();
+    // Evaluate and compare performance of all configured MVAs
+    factory->EvaluateAllMethods();
 
-   // Save the output
-   outputFile->Close();
+    // Save the output
+    outputFile->Close();
 
-   std::cout << "==> Wrote root file: " << outputFile->GetName() << std::endl;
-   std::cout << "==> TMVARegression is done!" << std::endl;
+    std::cout << "==> Wrote root file: " << outputFile->GetName() << std::endl;
+    std::cout << "==> TMVARegression is done!" << std::endl;
 
-   delete factory;
-   delete dataloader;
+    delete factory;
+    delete dataloader;
 
-   // Launch the GUI for the root macros
-   if (!gROOT->IsBatch()) TMVA::TMVARegGui( outfileName );
-   return;
+    // Launch the GUI for the root macros
+    if (!gROOT->IsBatch()) TMVA::TMVARegGui( outfileName );
+    return;
 }
