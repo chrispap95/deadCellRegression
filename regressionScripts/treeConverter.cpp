@@ -10,7 +10,7 @@ void treeConverter(TString input, bool isTraining, TString prefix=""){
     TTree* t1 = dynamic_cast< TTree* >(f->Get("t1"));
     Float_t nup, ndown, dead, layer;
     Float_t waferU, waferV, cellU, cellV;
-    Float_t ieta, iphi;
+    Float_t ieta, iphi, isScint;
     Float_t n1, n2, n3, n4, n5, n6;
     Float_t un1, un2, un3, un4, un5, un6;
     Float_t dn1, dn2, dn3, dn4, dn5, dn6;
@@ -86,16 +86,20 @@ void treeConverter(TString input, bool isTraining, TString prefix=""){
     tree->Branch("thickness",&thickness,"thickness/F");
     tree->Branch("rechitsum",&rechitsum,"rechitsum/F");
     tree->Branch("dead",&dead,"dead/F");
+    tree->Branch("isScint",&isScint,"isScint/F");
 
     for (int i = 0; i < t->GetEntries(); ++i) {
         t1->GetEntry(i);
+        if (ieta>0) isScint = 1;
+        else isScint = 0;
         /*
         ** If not training, keep all hits.
-        ** If creating a training sample, reject the saturation region
+        ** If creating a training sample, reject the saturatedm  region
         ** and only keep normal hits (not the buffer hits with layer = -1).
         */
         if (!isTraining) tree->Fill();
         else if (isTraining && layer > 0 && rechitsum < 700 && dead < 27.6) tree->Fill();
+
     }
     fout->cd();
     fout->Write();
